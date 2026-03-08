@@ -1,0 +1,43 @@
+{
+  "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v11/terminal-keeper.json",
+  "theme": "tribe",
+  "active": "default",
+  "activateOnStartup": true,
+  "keepExistingTerminals": false,
+  "sessions": {
+    "default": [
+      {
+        "name": "frontend",
+        "autoExecuteCommands": true,
+        "color": "terminal.ansiGreen",
+        "commands": [
+          "cd siga-frontend && clear"
+        ]
+      },
+      {
+        "name": "backend",
+        "autoExecuteCommands": true,
+        "color": "terminal.ansiYellow",
+        "commands": [
+          "cd SigaBackend && clear"
+        ]
+      },
+      {
+        "name": "frontend:server",
+        "autoExecuteCommands": true,
+        "color": "terminal.ansiGreen",
+        "commands": [
+          "cd siga-frontend && npm run dev"
+        ]
+      },
+      {
+        "name": "backend:server",
+        "autoExecuteCommands": true,
+        "color": "terminal.ansiYellow",
+        "commands": [
+          "cd SigaBackend && dotnet watch"
+        ]
+      }
+    ]
+  }
+}

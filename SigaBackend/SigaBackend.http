@@ -1,0 +1,59 @@
+@SigaBackend_HostAddress = http://localhost:5062/api
+
+# Suppliers
+
+POST {{SigaBackend_HostAddress}}/suppliers/
+Content-Type: application/json
+
+{
+  "Name": "Lácteos",
+  "TaxId": "ADFE21",
+  "ContactInfo": "correo@correo.com"
+}
+###
+
+GET {{SigaBackend_HostAddress}}/suppliers/
+Accept: application/json
+
+###
+
+# Categories
+
+POST {{SigaBackend_HostAddress}}/categories/
+Content-Type: application/json
+
+{
+  "Name": "Lácteos"
+}
+
+###
+
+POST {{SigaBackend_HostAddress}}/categories/
+Content-Type: application/json
+
+{
+  "Name": " "
+}
+
+###
+
+GET {{SigaBackend_HostAddress}}/categories/
+Accept: application/json
+
+###
+
+# Products
+
+POST {{SigaBackend_HostAddress}}/products/
+Content-Type: application/json
+
+{
+  "Name": "Queso Amarillo",
+  "SKU": "FSA123SSA",
+  "UnityMeasure": "KG"
+}
+
+###
+
+GET {{SigaBackend_HostAddress}}/products/
+Accept: application/json
