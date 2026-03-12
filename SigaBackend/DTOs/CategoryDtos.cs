@@ -13,9 +13,6 @@ public record CategoryCreateDto
   public string Description { get; set; } = string.Empty;
 }
 
-public record CategoryBasicDto(int Id, string Name, string? Description)
-{
-  public int Id { get; set; } = Id;
-  public string Name { get; set; } = Name;
-  public string Description { get; set; } = Description ?? string.Empty;
-}
+public record CategoryBasicDto(int Id, string Name, string? Description);
+
+public record CategoryExtendedDto(int Id, string Name, string? Description, List<ProductBasicDto> Products);

@@ -6,59 +6,78 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/ui/table-app";
-import { CategoryBasic } from "@/types/category";
+import { CategoryBasic } from "@/types/category/basic";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Pencil } from "lucide-react";
+import Link from "next/link";
+import { DeleteCategory } from "./delete-category";
 
 export const columns: ColumnDef<CategoryBasic>[] = [
   {
     accessorKey: "name",
     meta: { title: "Nombre" },
-    header: ({ column }) => {
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title={column.columnDef.meta?.title || ""}
+      />
+    ),
+    cell: ({ row }) => {
+      const path = `/dashboard/categories/${row.original.id}`;
+      const name = row.original.name;
+
       return (
-        <DataTableColumnHeader
-          column={column}
-          title={column.columnDef.meta?.title || ""}
-        />
+        <Button className="p-0 text-foreground" variant="link" asChild>
+          <Link href={path}>{name}</Link>
+        </Button>
       );
     },
   },
   {
     accessorKey: "description",
     meta: { title: "Descripción" },
-    header: ({ column }) => {
-      return (
-        <DataTableColumnHeader
-          column={column}
-          title={column.columnDef.meta?.title || ""}
-        />
-      );
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title={column.columnDef.meta?.title || ""}
+      />
+    ),
   },
-
   {
     id: "actions",
     cell: ({ row }) => {
-      const payment = row.original;
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            <div className="w-full flex justify-center">
+              <Button variant="ghost" aria-label="Abrir menú">
+                <MoreHorizontal />
+              </Button>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Copy payment ID</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Button asChild variant="secondary">
+                <Link
+                  href={`/dashboard/categories/edit/${row.original.id}`}
+                  aria-label="Editar"
+                  className="cursor-pointer"
+                >
+                  <Pencil />
+                </Link>
+              </Button>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem className="w-full" asChild>
+              <DeleteCategory
+                classNames={{ trigger: "w-full" }}
+                id={row.original.id.toString()}
+              />
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

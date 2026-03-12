@@ -12,5 +12,11 @@ public static class ProductEndpoints
     group.MapPost("/", (ProductCreateDto dto, IProductService service) => service.CreateProductAsync(dto)).WithName("CreateProduct");
 
     group.MapGet("/", (IProductService service) => service.GetProductsAsync()).WithName("GetProducts");
+
+    group.MapGet("/{Id}", (int Id, IProductService service) => service.GetProductByIdAsync(Id));
+
+    group.MapPut("/{Id}", (int Id, ProductBasicDto dto, IProductService service) => service.UpdateProductAsync(Id, dto));
+
+    group.MapDelete("/{Id}", (int Id, IProductService service) => service.DeleteProductAsync(Id));
   }
 }

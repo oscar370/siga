@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SigaBackend.Data;
 using SigaBackend.DTOs;
@@ -10,8 +11,10 @@ namespace SigaBackend.Services;
 interface IProductService
 {
   Task<Results<Created<ProductBasicDto>, BadRequest<string>>> CreateProductAsync(ProductCreateDto dto);
-
-  Task<Results<Ok<List<ProductExtendedDto>>, BadRequest<string>>> GetProductsAsync();
+  Task<Results<Ok<List<ProductExtendedDto>>, NotFound>> GetProductsAsync();
+  Task<Results<Ok<ProductExtendedDto>, NotFound>> GetProductByIdAsync(int Id);
+  Task<Results<Ok<ProductBasicDto>, BadRequest<string>>> UpdateProductAsync(int Id, ProductBasicDto dto);
+  Task<Results<Ok<int>, BadRequest<string>>> DeleteProductAsync(int Id);
 }
 
 public class ProductService(SigaDbContext context) : IProductService
@@ -45,12 +48,10 @@ public class ProductService(SigaDbContext context) : IProductService
     return TypedResults.Created($"/api/products/{product.ProductId}", result);
   }
 
-  public async Task<Results<Ok<List<ProductExtendedDto>>, BadRequest<string>>> GetProductsAsync()
+  public async Task<Results<Ok<List<ProductExtendedDto>>, NotFound>> GetProductsAsync()
   {
     var products = await _context.Products
       .Where(p => p.IsActive && p.DeletedAt == null)
-      .Include(p => p.UnityOfMeasure)
-      .Include(p => p.UnityOfMeasure)
       .Select(p => new ProductExtendedDto(p.ProductId,
         p.Name,
         p.SKU,
@@ -68,5 +69,59 @@ public class ProductService(SigaDbContext context) : IProductService
       .ToListAsync();
 
     return TypedResults.Ok(products);
+  }
+
+  public async Task<Results<Ok<ProductExtendedDto>, NotFound>> GetProductByIdAsync(int Id)
+  {
+    var product = await _context.Products
+      .Where(p => p.ProductId == Id && p.IsActive && p.DeletedAt == null)
+      .Select(p => new ProductExtendedDto(
+        p.ProductId,
+        p.Name,
+        p.SKU,
+        p.Description,
+        p.BasePrice,
+        p.CategoryId,
+        p.UnityOfMeasureId,
+        new CategoryBasicDto(p.Category!.CategoryId, p.Category.Name, p.Category.Description),
+        new UnityOfMeasureBasicDto(p.UnityOfMeasure!.UnityOfMeasureId, p.UnityOfMeasure.Name, p.UnityOfMeasure.Abbreviation)
+      ))
+      .FirstAsync();
+
+    return TypedResults.Ok(product);
+  }
+
+  public async Task<Results<Ok<ProductBasicDto>, BadRequest<string>>> UpdateProductAsync(int Id, ProductBasicDto dto)
+  {
+    var product = await _context.Products
+      .Where(p => p.ProductId == Id && p.IsActive && p.DeletedAt == null)
+      .FirstAsync();
+
+    product.Name = dto.Name;
+    product.SKU = dto.SKU;
+    product.Description = dto.Description;
+    product.BasePrice = dto.BasePrice;
+    product.CategoryId = dto.CategoryId;
+    product.UnityOfMeasureId = dto.UnityOfMeasureId;
+
+    _context.Products.Update(product);
+    await _context.SaveChangesAsync();
+
+    return TypedResults.Ok(dto);
+  }
+
+  public async Task<Results<Ok<int>, BadRequest<string>>> DeleteProductAsync(int Id)
+  {
+    var product = await _context.Products
+      .Where(p => p.ProductId == Id && p.IsActive && p.DeletedAt == null)
+      .FirstAsync();
+
+    product.IsActive = false;
+    product.DeletedAt = DateTime.UtcNow;
+
+    _context.Products.Update(product);
+    await _context.SaveChangesAsync();
+
+    return TypedResults.Ok(Id);
   }
 }

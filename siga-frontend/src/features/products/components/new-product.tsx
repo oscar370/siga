@@ -1,42 +1,21 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ErrorContent } from "@/components/ui/error-content";
+import { Form } from "@/components/ui/form";
+import { SelectItem } from "@/components/ui/select";
+import { SkeletonForm } from "@/components/ui/skeleton-form";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
-import { getCategories } from "@/services/get-categories";
-import { getUnitsOfMeasure } from "@/services/get-units-of-measure";
-import { productCreateSchema } from "@/types/product";
+import { getCategories } from "@/services/category/get-categories";
+import { createProduct } from "@/services/product/create-product";
+import { getUnitsOfMeasure } from "@/services/unity-of-measure/get-units-of-measure";
+import { productCreateSchema } from "@/types/product/create";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createProduct } from "../../../services/create-product";
 
 export function NewProduct() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(productCreateSchema),
-  });
-
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -49,131 +28,95 @@ export function NewProduct() {
     onError: (r) => toast.error(r.message),
   });
 
-  const { data: categories } = useQuery({
+  const {
+    data: categories,
+    isLoading: isCategoriesLoading,
+    isError: isCategoriesError,
+  } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
-  const { data: unitsOfMeasure } = useQuery({
+  const {
+    data: unitsOfMeasure,
+    isLoading: isUnitsOfMeasureLoading,
+    isError: isUnitsOfMeasureError,
+  } = useQuery({
     queryKey: ["units-of-measure"],
     queryFn: getUnitsOfMeasure,
   });
 
+  const { handleSubmit, reset, control } = useForm({
+    resolver: zodResolver(productCreateSchema),
+  });
+
+  if (isCategoriesError || isUnitsOfMeasureError) return <ErrorContent />;
+
+  if (isCategoriesLoading || isUnitsOfMeasureLoading) return <SkeletonForm />;
+
+  if (!categories || !unitsOfMeasure) return null;
+
   return (
-    <form onSubmit={handleSubmit((data) => mutate(data))}>
-      <FieldGroup>
-        <Field>
-          <FieldLabel>
-            Nombre
-            <span className="text-destructive">*</span>
-          </FieldLabel>
-          <Input {...register("name")} />
-          <FieldError>{errors?.name?.message}</FieldError>
-        </Field>
+    <Form onSubmit={handleSubmit((data) => mutate(data))}>
+      <Form.Input
+        name="name"
+        control={control}
+        label="Nombre"
+        rules={{ required: true }}
+      />
 
-        <Field>
-          <FieldLabel>
-            SKU
-            <span className="text-destructive">*</span>
-          </FieldLabel>
-          <Input {...register("sku")} />
-          <FieldError>{errors?.sku?.message}</FieldError>
-        </Field>
+      <Form.Input
+        name="sku"
+        control={control}
+        label="SKU"
+        rules={{ required: true }}
+      />
 
-        <Field>
-          <FieldLabel>
-            Precio base
-            <span className="text-destructive">*</span>
-          </FieldLabel>
-          <div className="relative">
-            <Input
-              {...register("basePrice", { valueAsNumber: true })}
-              type="number"
-            />
-          </div>
-          <FieldError>{errors?.basePrice?.message}</FieldError>
-        </Field>
+      <Form.Input
+        name="basePrice"
+        control={control}
+        label="Precio base"
+        rules={{ required: true }}
+        type="number"
+      />
 
-        <Controller
-          name="categoryId"
-          control={control}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel>
-                Categoría
-                <span className="text-destructive">*</span>
-              </FieldLabel>
-              <Select
-                name={field.name}
-                value={(field?.value as number)?.toString() ?? ""}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una categoría..." />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {categories &&
-                    categories.map((c) => (
-                      <SelectItem
-                        key={c.id}
-                        value={c.id.toString()}
-                        className="text-ellipsis overflow-hidden whitespace-nowrap"
-                      >
-                        {c.name} {c.description && `- ${c.description}`}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <FieldError>{errors?.categoryId?.message}</FieldError>
-            </Field>
-          )}
-        />
+      <Form.Select
+        name="categoryId"
+        control={control}
+        label="Categoría"
+        rules={{ required: true }}
+        placeholder="Selecciona una categoría..."
+      >
+        {categories.map((c) => (
+          <SelectItem
+            key={c.id}
+            value={String(c.id)}
+            className="text-ellipsis overflow-hidden whitespace-nowrap"
+          >
+            {c.name} {c.description && `- ${c.description}`}
+          </SelectItem>
+        ))}
+      </Form.Select>
 
-        <Controller
-          name="unityOfMeasureId"
-          control={control}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel>
-                Unidad de medida
-                <span className="text-destructive">*</span>
-              </FieldLabel>
-              <Select
-                name={field.name}
-                value={(field.value as number)?.toString() ?? ""}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una unidad de medida..." />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {unitsOfMeasure &&
-                    unitsOfMeasure.map((um) => (
-                      <SelectItem
-                        key={um.id}
-                        value={um.id.toString()}
-                        className="text-ellipsis overflow-hidden whitespace-nowrap"
-                      >
-                        {um.name} - {um.abbreviation}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <FieldError>{errors?.unityOfMeasureId?.message}</FieldError>
-            </Field>
-          )}
-        />
+      <Form.Select
+        name="unityOfMeasureId"
+        control={control}
+        label="Unidad de medida"
+        rules={{ required: true }}
+        placeholder="Selecciona una unidad de medida..."
+      >
+        {unitsOfMeasure.map((um) => (
+          <SelectItem key={um.id} value={String(um.id)}>
+            {um.name} - {um.abbreviation}
+          </SelectItem>
+        ))}
+      </Form.Select>
 
-        <Field>
-          <FieldLabel>Descripción</FieldLabel>
-          <Textarea {...register("description")} />
-          <FieldError>{errors?.description?.message}</FieldError>
-        </Field>
-      </FieldGroup>
+      <Form.Textarea name="description" control={control} label="Descripción" />
 
-      <Button className="w-full mt-4" disabled={isPending}>
+      <Button className="w-full mt-2" disabled={isPending}>
         {isPending ? <Spinner /> : "Guardar"}
       </Button>
-    </form>
+    </Form>
   );
 }

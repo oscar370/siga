@@ -7,7 +7,7 @@ import { DataTable } from "@/components/ui/table-app";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { getUnitsOfMeasure } from "../../../services/get-units-of-measure";
+import { getUnitsOfMeasure } from "../../../services/unity-of-measure/get-units-of-measure";
 import { columns } from "./columns";
 
 export function UnitsOfMeasureTable() {
@@ -24,21 +24,22 @@ export function UnitsOfMeasureTable() {
     return <ErrorContent />;
   }
 
-  if (data)
-    return (
-      <DataTable
-        data={data}
-        columns={columns}
-        filterColumn="name"
-        filterPlaceholder="Buscar por nombre..."
-        toolbarActions={
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/units-of-measure/new">
-              <Plus />
-              <span>Agregar</span>
-            </Link>
-          </Button>
-        }
-      />
-    );
+  if (!data) return null;
+
+  return (
+    <DataTable
+      data={data}
+      columns={columns}
+      filterColumn="name"
+      filterPlaceholder="Buscar por nombre..."
+      toolbarActions={
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/dashboard/units-of-measure/new">
+            <Plus />
+            <span>Agregar</span>
+          </Link>
+        </Button>
+      }
+    />
+  );
 }

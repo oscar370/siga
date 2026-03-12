@@ -7,7 +7,7 @@ import { DataTable } from "@/components/ui/table-app";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { getCategories } from "../../../services/get-categories";
+import { getCategories } from "../../../services/category/get-categories";
 import { columns } from "./columns";
 
 export function CategoriesTable() {

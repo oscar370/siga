@@ -1,24 +1,18 @@
 "use client";
 
+import { useCanGoBack } from "@/hooks/use-can-go-back";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSyncExternalStore } from "react";
 import { Button } from "./button";
-
-const subscribe = () => () => {};
 
 export function BackButton() {
   const router = useRouter();
-  const canGoBack = useSyncExternalStore(
-    subscribe,
-    () => window.history.length > 0,
-    () => false,
-  );
+  const canGoBack = useCanGoBack();
 
   if (!canGoBack) return null;
 
   return (
-    <li className="items-start">
+    <li className="list-none items-start">
       <Button
         variant="ghost"
         aria-label="Volver a la página anterior"

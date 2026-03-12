@@ -17,3 +17,5 @@ public record UnityOfMeasureCreateDto
 }
 
 public record UnityOfMeasureBasicDto(int Id, string Name, string Abbreviation);
+
+public record UnityOfMeasureExtendedDto(int Id, string Name, string Abbreviation, List<ProductBasicDto> Products);
