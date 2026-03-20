@@ -1,20 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { deleteCategory } from "@/services/category/delete-category";
-import { useMutation } from "@tanstack/react-query";
-import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { toast } from "sonner";
 
 type DeleteCategoryProps = {
@@ -25,45 +14,30 @@ type DeleteCategoryProps = {
 };
 
 export function DeleteCategory({ id, classNames }: DeleteCategoryProps) {
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const { mutate } = useMutation({
-    mutationFn: () => deleteCategory(id),
-    onSuccess: () => {
+  function handleDelete() {
+    startTransition(async () => {
+      const response = await deleteCategory(id);
+
+      if (!response.ok) {
+        toast.error(response.message);
+        return;
+      }
+
       toast.success("Se eliminó la categoría");
       router.replace("/dashboard/categories");
-    },
-    onError: (e) => toast.error(e.message),
-  });
+    });
+  }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          className={`${classNames?.trigger ?? ""}`}
-          variant="destructive"
-          aria-label="Eliminar"
-        >
-          <Trash />
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Eliminar categoría</DialogTitle>
-        </DialogHeader>
-
-        <DialogDescription>
-          ¿Quieres proceder con la eliminación?
-        </DialogDescription>
-
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="secondary">Cancelar</Button>
-          </DialogClose>
-          <Button onClick={() => mutate()}>Confirmar</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DeleteDialog
+      title="Eliminar categoría"
+      description="¿Quieres proceder con la eliminación?"
+      isPending={isPending}
+      onDelete={handleDelete}
+      classNames={classNames}
+    />
   );
 }

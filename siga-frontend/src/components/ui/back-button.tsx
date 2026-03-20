@@ -16,6 +16,7 @@ export function BackButton() {
       <Button
         variant="ghost"
         aria-label="Volver a la página anterior"
+        className="p-0 size-7"
         onClick={() => router.back()}
       >
         <ChevronLeft />

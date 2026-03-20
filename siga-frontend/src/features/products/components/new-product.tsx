@@ -1,63 +1,54 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ErrorContent } from "@/components/ui/error-content";
 import { Form } from "@/components/ui/form";
 import { SelectItem } from "@/components/ui/select";
-import { SkeletonForm } from "@/components/ui/skeleton-form";
 import { Spinner } from "@/components/ui/spinner";
-import { getCategories } from "@/services/category/get-categories";
 import { createProduct } from "@/services/product/create-product";
-import { getUnitsOfMeasure } from "@/services/unity-of-measure/get-units-of-measure";
-import { productCreateSchema } from "@/types/product/create";
+import { CategoryBasic } from "@/types/category/basic";
+import { ProductCreate, productCreateSchema } from "@/types/product/create";
+import { UnitsOfMeasureBasic } from "@/types/unity-of-measure/unity-of-measure-basic";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export function NewProduct() {
-  const queryClient = useQueryClient();
+type NewProductProps = {
+  categories: CategoryBasic[];
+  unitsOfMeasure: UnitsOfMeasureBasic;
+};
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: createProduct,
-    onSuccess: () => {
-      reset();
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("El producto se ha creado");
-    },
-    onError: (r) => toast.error(r.message),
-  });
-
-  const {
-    data: categories,
-    isLoading: isCategoriesLoading,
-    isError: isCategoriesError,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: getCategories,
-  });
-
-  const {
-    data: unitsOfMeasure,
-    isLoading: isUnitsOfMeasureLoading,
-    isError: isUnitsOfMeasureError,
-  } = useQuery({
-    queryKey: ["units-of-measure"],
-    queryFn: getUnitsOfMeasure,
-  });
+export function NewProduct({ categories, unitsOfMeasure }: NewProductProps) {
+  const [isPending, startTransition] = useTransition();
 
   const { handleSubmit, reset, control } = useForm({
     resolver: zodResolver(productCreateSchema),
+    defaultValues: {
+      name: "",
+      sku: "",
+      description: "",
+      basePrice: 0,
+      categoryId: "",
+      unityOfMeasureId: "",
+    },
   });
 
-  if (isCategoriesError || isUnitsOfMeasureError) return <ErrorContent />;
+  function onSubmit(data: ProductCreate) {
+    startTransition(async () => {
+      const response = await createProduct(data);
 
-  if (isCategoriesLoading || isUnitsOfMeasureLoading) return <SkeletonForm />;
+      if (!response.ok) {
+        toast.error(response.message);
+        return;
+      }
 
-  if (!categories || !unitsOfMeasure) return null;
+      toast.success("El producto se ha creado");
+      reset();
+    });
+  }
 
   return (
-    <Form onSubmit={handleSubmit((data) => mutate(data))}>
+    <Form onSubmit={handleSubmit(onSubmit)}>
       <Form.Input
         name="name"
         control={control}

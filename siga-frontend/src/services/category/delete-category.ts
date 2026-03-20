@@ -1,14 +1,18 @@
 "use server";
 
-import { handleServiceError } from "@/lib/actions";
-import { api } from "@/lib/api-client";
+import { fromResponse } from "@/lib/action-helpers";
+import { api } from "@/lib/api-client.server";
+import { ActionResult } from "@/types/common";
+import { refresh } from "next/cache";
 
-export async function deleteCategory(id: string) {
-  try {
-    const { data } = await api.delete(`/categories/${id}`);
+export async function deleteCategory(
+  id: string,
+): Promise<ActionResult<number>> {
+  const response = await fromResponse<number>(
+    await api.delete(`/categories/${id}`),
+  );
 
-    return data as number;
-  } catch (error) {
-    await handleServiceError(error);
-  }
+  if (response.ok) refresh();
+
+  return response;
 }

@@ -1,15 +1,24 @@
 "use server";
 
-import { handleServiceError } from "@/lib/actions";
-import { api } from "@/lib/api-client";
-import { CategoryBasic } from "@/types/category/basic";
+import { fromResponse, validate } from "@/lib/action-helpers";
+import { api } from "@/lib/api-client.server";
+import { CategoryBasic, categoryBasicSchema } from "@/types/category/basic";
+import { ActionResult } from "@/types/common";
+import { refresh } from "next/cache";
 
-export async function updateCategory(id: string, updates: CategoryBasic) {
-  try {
-    const { data } = await api.put(`/categories/${id}`, updates);
+export async function updateCategory(
+  id: string,
+  updates: CategoryBasic,
+): Promise<ActionResult<CategoryBasic>> {
+  const result = validate(categoryBasicSchema, updates);
 
-    return data as CategoryBasic;
-  } catch (error) {
-    handleServiceError(error);
-  }
+  if (!result.ok) return result;
+
+  const response = await fromResponse<CategoryBasic>(
+    await api.put(`/categories/${id}`, updates),
+  );
+
+  if (response.ok) refresh();
+
+  return response;
 }

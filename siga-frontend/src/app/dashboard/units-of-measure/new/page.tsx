@@ -3,7 +3,11 @@ import { NewUnityOfMeasure } from "@/features/units-of-measure/components/new-un
 
 export default function Page() {
   return (
-    <PageContainer title="Nueva unidad de medida" isSubPage>
+    <PageContainer
+      title="Nueva unidad de medida"
+      classNames={{ content: "max-w-md" }}
+      isSubPage
+    >
       <NewUnityOfMeasure />
     </PageContainer>
   );

@@ -18,5 +18,5 @@ public class Sale()
 
   // [1:N]
   public int UserId { get; set; }
-  public required User User { get; set; }
+  public User User { get; set; } = null!;
 }

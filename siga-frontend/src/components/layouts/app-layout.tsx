@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { ProfileWidget } from "@/features/auth/components/profile-widget";
+import { getUser } from "@/services/auth/get-user";
+import { redirect } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -12,17 +14,16 @@ type AppLayoutProps = {
   children: React.ReactNode;
 };
 
-export function AppLayout({ children }: AppLayoutProps) {
+export async function AppLayout({ children }: AppLayoutProps) {
+  const user = await getUser();
+
+  if (!user.ok) redirect("/auth/login");
+
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="h-(--header-height)">
-          <Link
-            className="w-full flex items-center justify-center font-bold cursor-pointer"
-            href="/"
-          >
-            SIGA
-          </Link>
+          <ProfileWidget user={user.data} />
         </SidebarHeader>
         <SidebarContent>
           <SidebarContentApp />

@@ -16,10 +16,6 @@ public record SupplierCreateDto
   public string ContactInfo { get; set; } = string.Empty;
 }
 
-public record SupplierBasicDto(int Id, string Name, string TaxId, string ContactInfo)
-{
-  public int Id { get; set; } = Id;
-  public string Name { get; set; } = Name;
-  public string TaxId { get; set; } = TaxId;
-  public string ContactInfo { get; set; } = ContactInfo;
-}
+public record SupplierBasicDto(int Id, string Name, string TaxId, string ContactInfo);
+
+public record SupplierExtendedDto(int Id, string Name, string TaxId, string ContactInfo, IEnumerable<PurchaseBasicDto> Purchases);

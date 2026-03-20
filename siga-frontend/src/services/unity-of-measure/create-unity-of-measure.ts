@@ -1,20 +1,27 @@
 "use server";
 
-import { handleServiceError } from "@/lib/actions";
-import { api } from "@/lib/api-client";
+import { fromResponse, validate } from "@/lib/action-helpers";
+import { api } from "@/lib/api-client.server";
+import { ActionResult } from "@/types/common";
 import { UnityOfMeasureBasic } from "@/types/unity-of-measure/unity-of-measure-basic";
 import {
   UnityOfMeasureCreate,
   unityOfMeasureCreteSchema,
 } from "@/types/unity-of-measure/unity-of-measure-create";
-import z from "zod";
+import { refresh } from "next/cache";
 
-export async function createUnityOfMeasure(data: UnityOfMeasureCreate) {
-  try {
-    const result = z.parse(unityOfMeasureCreteSchema, data);
-    const response = await api.post("/units-of-measure", result);
-    return response.data as UnityOfMeasureBasic;
-  } catch (error) {
-    await handleServiceError(error);
-  }
+export async function createUnityOfMeasure(
+  data: UnityOfMeasureCreate,
+): Promise<ActionResult<UnityOfMeasureBasic>> {
+  const result = validate(unityOfMeasureCreteSchema, data);
+
+  if (!result.ok) return result;
+
+  const response = await fromResponse<UnityOfMeasureBasic>(
+    await api.post("/units-of-measure", result.data),
+  );
+
+  if (response.ok) refresh();
+
+  return response;
 }

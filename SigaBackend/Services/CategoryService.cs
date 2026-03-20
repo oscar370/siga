@@ -95,7 +95,7 @@ public class CategoryService(SigaDbContext context) : ICategoryService
     if (category == null) return TypedResults.BadRequest("The category was not found. Please verify the ID");
 
     category.IsActive = false;
-    category.DeletedAt = DateTime.UtcNow;
+    category.DeletedAt = DateTimeOffset.UtcNow;
 
     _context.Categories.Update(category);
     await _context.SaveChangesAsync();

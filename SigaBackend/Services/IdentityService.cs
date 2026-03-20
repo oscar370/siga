@@ -1,28 +1,33 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using SigaBackend.Data;
+using Microsoft.AspNetCore.Identity;
+using SigaBackend.DTOs;
 using SigaBackend.Models;
 
 namespace SigaBackend.Services;
 
-public class IdentityService
+interface IIdentityService
 {
-  public static async Task<Results<Ok<UserResponseDto>, NotFound>> GetUser(int id, SigaDbContext db)
-  {
-    var user = await db.Users
-      .Include(u => u.UserRoles)
-      .ThenInclude(ur => ur.Role)
-      .Where(u => u.UserId == id)
-      .Select(u => new UserResponseDto
-      {
-        Email = u.Email,
-        FullName = u.FullName,
-        Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList()
-      })
-      .FirstOrDefaultAsync();
+  Task<Results<Ok<UserDto>, NotFound, UnauthorizedHttpResult>> GetUserAsync(ClaimsPrincipal claims, UserManager<User> userManager);
+}
 
+public class IdentityService() : IIdentityService
+{
+  public async Task<Results<Ok<UserDto>, NotFound, UnauthorizedHttpResult>> GetUserAsync(ClaimsPrincipal claims, UserManager<User> userManager)
+  {
+    var userId = claims.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (userId == null) return TypedResults.Unauthorized();
+
+    var user = await userManager.FindByIdAsync(userId);
     if (user == null) return TypedResults.NotFound();
 
-    return TypedResults.Ok(user);
+    var roles = await userManager.GetRolesAsync(user);
+
+    return TypedResults.Ok(new UserDto(
+      user.Id,
+      user.Email,
+      user.FullName,
+       roles
+    ));
   }
 }

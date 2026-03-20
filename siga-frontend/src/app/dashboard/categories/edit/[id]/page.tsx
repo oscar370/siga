@@ -1,5 +1,7 @@
+import { ErrorContent } from "@/components/ui/error-content";
 import { PageContainer } from "@/components/ui/page-container";
 import { EditCategory } from "@/features/categories/components/edit-category";
+import { getCategoryById } from "@/services/category/get-category-by-id";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -7,6 +9,7 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
+  const response = await getCategoryById(id);
 
   return (
     <PageContainer
@@ -14,7 +17,11 @@ export default async function Page({ params }: PageProps) {
       classNames={{ content: "max-w-lg" }}
       isSubPage
     >
-      <EditCategory id={id} />
+      {!response.ok ? (
+        <ErrorContent />
+      ) : (
+        <EditCategory id={id} category={response.data} />
+      )}
     </PageContainer>
   );
 }

@@ -1,17 +1,24 @@
 "use server";
 
-import { handleServiceError } from "@/lib/actions";
-import { api } from "@/lib/api-client";
+import { fromResponse, validate } from "@/lib/action-helpers";
+import { api } from "@/lib/api-client.server";
 import { CategoryBasic } from "@/types/category/basic";
 import { CategoryCreate, categoryCreateSchema } from "@/types/category/create";
-import z from "zod";
+import { ActionResult } from "@/types/common";
+import { refresh } from "next/cache";
 
-export async function createCategory(category: CategoryCreate) {
-  try {
-    const result = z.parse(categoryCreateSchema, category);
-    const { data } = await api.post("/categories", result);
-    return data as CategoryBasic;
-  } catch (error) {
-    await handleServiceError(error);
-  }
+export async function createCategory(
+  category: CategoryCreate,
+): Promise<ActionResult<CategoryBasic>> {
+  const result = validate(categoryCreateSchema, category);
+
+  if (!result.ok) return result;
+
+  const response = await fromResponse<CategoryBasic>(
+    await api.post("/categories", result.data),
+  );
+
+  if (response.ok) refresh();
+
+  return response;
 }

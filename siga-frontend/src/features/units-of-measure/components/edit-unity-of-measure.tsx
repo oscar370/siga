@@ -1,67 +1,49 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ErrorContent } from "@/components/ui/error-content";
 import { Form } from "@/components/ui/form";
-import { SkeletonForm } from "@/components/ui/skeleton-form";
 import { Spinner } from "@/components/ui/spinner";
-import { getUnityOfMeasureById } from "@/services/unity-of-measure/get-unity-of-measure-by-id";
 import { updateUnityOfMeasure } from "@/services/unity-of-measure/update-unity-of-measure";
 import {
   UnityOfMeasureBasic,
   unityOfMeasureBasicSchema,
 } from "@/types/unity-of-measure/unity-of-measure-basic";
+import { UnityOfMeasureExtended } from "@/types/unity-of-measure/unity-of-measure-extended";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 type EditUnityOfMeasureProps = {
   id: string;
+  unityOfMeasure: UnityOfMeasureExtended;
 };
 
-export function EditUnityOfMeasure({ id }: EditUnityOfMeasureProps) {
-  const queryClient = useQueryClient();
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["units-of-measure", "unity-of-measure", id],
-    queryFn: () => getUnityOfMeasureById(id),
-  });
-
-  const { handleSubmit, reset, control } = useForm({
+export function EditUnityOfMeasure({
+  id,
+  unityOfMeasure,
+}: EditUnityOfMeasureProps) {
+  const [isPending, startTransition] = useTransition();
+  const { handleSubmit, control } = useForm({
     resolver: zodResolver(unityOfMeasureBasicSchema),
-    defaultValues: {
-      id: 0,
-      name: "",
-      abbreviation: "",
-    },
+    defaultValues: unityOfMeasure,
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: (data: UnityOfMeasureBasic) => updateUnityOfMeasure(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["units-of-measure"] });
+  function onSubmit(data: UnityOfMeasureBasic) {
+    startTransition(async () => {
+      const response = await updateUnityOfMeasure(id, data);
+
+      if (!response.ok) {
+        toast.error(response.message);
+        return;
+      }
+
       toast.success("La unidad de medida se ha actualizado");
-    },
-    onError: (r) => toast.error(r.message),
-  });
-
-  useEffect(() => {
-    if (!data) return;
-
-    reset({
-      ...data,
     });
-  }, [data, reset]);
-
-  if (isError) return <ErrorContent />;
-
-  if (isLoading) return <SkeletonForm />;
-
-  if (!data) return null;
+  }
 
   return (
-    <Form onSubmit={handleSubmit((data) => mutate(data))}>
+    <Form onSubmit={handleSubmit(onSubmit)}>
       <Form.Input name="name" control={control} label="Nombre" />
 
       <Form.Input name="abbreviation" control={control} label="Abreviatura" />

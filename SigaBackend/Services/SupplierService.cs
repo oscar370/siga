@@ -9,8 +9,10 @@ namespace SigaBackend.Services;
 interface ISupplierService
 {
   Task<Results<Created<SupplierBasicDto>, BadRequest<string>>> CreateSupplierAsync(SupplierCreateDto dto);
-
   Task<Results<Ok<List<SupplierBasicDto>>, NotFound>> GetSuppliersAsync();
+  Task<Results<Ok<SupplierExtendedDto>, NotFound>> GetSupplierByIdAsync(int Id);
+  Task<Results<Ok<SupplierBasicDto>, BadRequest<string>>> UpdateSupplierAsync(int Id, SupplierBasicDto dto);
+  Task<Results<Ok<int>, BadRequest<string>>> DeleteSupplierAsync(int Id);
 }
 
 public class SupplierService(SigaDbContext context) : ISupplierService
@@ -42,5 +44,65 @@ public class SupplierService(SigaDbContext context) : ISupplierService
       .ToListAsync();
 
     return TypedResults.Ok(suppliers);
+  }
+
+  public async Task<Results<Ok<SupplierExtendedDto>, NotFound>> GetSupplierByIdAsync(int Id)
+  {
+    var supplier = await _context.Suppliers
+      .Where(s => s.SupplierId == Id)
+      .Select(s => new SupplierExtendedDto(
+        s.SupplierId,
+        s.Name,
+        s.TaxId,
+        s.ContactInfo,
+        s.Purchases.Select(p => new PurchaseBasicDto(
+          p.PurchaseId,
+          p.ReferenceInvoice,
+          p.OperationDate,
+          p.TotalAmount,
+          p.Status,
+          p.SupplierId,
+          p.UserId
+        ))
+      ))
+      .FirstAsync();
+
+    return TypedResults.Ok(supplier);
+  }
+
+  public async Task<Results<Ok<SupplierBasicDto>, BadRequest<string>>> UpdateSupplierAsync(int Id, SupplierBasicDto dto)
+  {
+    var supplier = await _context.Suppliers
+      .Where(s => s.SupplierId == Id)
+      .FirstAsync();
+
+    supplier.Name = dto.Name;
+    supplier.TaxId = dto.TaxId;
+    supplier.ContactInfo = dto.ContactInfo;
+
+    await _context.SaveChangesAsync();
+
+    var result = new SupplierBasicDto(
+      supplier.SupplierId,
+      supplier.Name,
+      supplier.TaxId,
+      supplier.ContactInfo
+    );
+
+    return TypedResults.Ok(result);
+  }
+
+  public async Task<Results<Ok<int>, BadRequest<string>>> DeleteSupplierAsync(int Id)
+  {
+    var supplier = await _context.Suppliers
+      .Where(s => s.SupplierId == Id)
+      .FirstAsync();
+
+    supplier.IsActive = false;
+    supplier.DeletedAt = DateTimeOffset.UtcNow;
+
+    await _context.SaveChangesAsync();
+
+    return TypedResults.Ok(Id);
   }
 }

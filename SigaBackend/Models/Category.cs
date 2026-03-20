@@ -14,7 +14,7 @@ public class Category
 
   public bool IsActive { get; set; } = true;
 
-  public DateTime? DeletedAt { get; set; }
+  public DateTimeOffset? DeletedAt { get; set; }
 
   // [1:N]
   public ICollection<Product> Products { get; set; } = [];

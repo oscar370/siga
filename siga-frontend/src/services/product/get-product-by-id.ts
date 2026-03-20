@@ -1,17 +1,18 @@
 "use server";
 
-import { handleServiceError } from "@/lib/actions";
-import { api } from "@/lib/api-client";
-import { productExtendedSchema } from "@/types/product/extended";
-import z from "zod";
+import { fromResponse, validate } from "@/lib/action-helpers";
+import { api } from "@/lib/api-client.server";
+import { ActionResult } from "@/types/common";
+import {
+  ProductExtended,
+  productExtendedSchema,
+} from "@/types/product/extended";
 
-export async function getProductById(id: string) {
-  try {
-    const { data } = await api.get(`/products/${id}`);
-    const result = z.parse(productExtendedSchema, data);
-
-    return result;
-  } catch (error) {
-    await handleServiceError(error);
-  }
+export async function getProductById(
+  id: string,
+): Promise<ActionResult<ProductExtended>> {
+  const response = await fromResponse(await api.get(`/products/${id}`));
+  if (!response.ok) return response;
+  const result = validate(productExtendedSchema, response.data);
+  return result;
 }

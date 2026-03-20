@@ -14,11 +14,11 @@ public class SaleDetails()
 
   // [1:N]
   public int SaleId { get; set; }
-  public required Sale Sale { get; set; }
+  public Sale Sale { get; set; } = null!;
 
   // [1:N]
   public int ProductId { get; set; }
-  public required Product Product { get; set; }
+  public Product Product { get; set; } = null!;
 
   // [1:N]
   public ICollection<SaleTransaction> Transactions { get; set; } = [];

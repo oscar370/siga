@@ -1,7 +1,16 @@
 import { cn } from "@/lib/utils";
 import { ComponentProps, ReactNode } from "react";
 import { Controller, FieldValues, UseControllerProps } from "react-hook-form";
-import { Field, FieldContent, FieldError, FieldLabel } from "./field";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet as FieldSetBase,
+} from "./field";
 import { Input as InputBase } from "./input";
 import {
   Select as SelectBase,
@@ -66,6 +75,59 @@ function Input<T extends FieldValues>({
   );
 }
 
+type DateTimeInputProps<T extends FieldValues> = ComponentProps<"input"> &
+  TController<T> & {
+    label: string;
+  };
+
+function DateTimeInput<T extends FieldValues>({
+  name,
+  control,
+  label,
+  rules,
+  className,
+  ...props
+}: DateTimeInputProps<T>) {
+  function toInputValue(iso: string) {
+    if (!iso) return "";
+    const date = new Date(iso);
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  }
+
+  return (
+    <Controller
+      name={name}
+      control={control}
+      rules={rules}
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel htmlFor={field.name}>
+            {label}
+            {rules?.required && <span className="text-destructive">*</span>}
+          </FieldLabel>
+          <InputBase
+            {...props}
+            {...field}
+            id={field.name}
+            aria-invalid={fieldState.invalid}
+            className={cn(className)}
+            value={toInputValue(field.value ?? "")}
+            type="datetime-local"
+            onChange={(e) =>
+              field.onChange(
+                e.target.value ? new Date(e.target.value).toISOString() : "",
+              )
+            }
+            onBlur={field.onBlur}
+          />
+          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+        </Field>
+      )}
+    />
+  );
+}
+
 type SelectProps<T extends FieldValues> = TController<T> & {
   label: string;
   placeholder: string;
@@ -97,10 +159,9 @@ function Select<T extends FieldValues>({
           <SelectBase
             name={field.name}
             value={field.value}
-            // Radix emits onValueChange("") during remount if options aren't ready yet
-            onValueChange={(value) => value && field.onChange(value)}
+            onValueChange={field.onChange}
           >
-            <SelectTrigger>
+            <SelectTrigger aria-invalid={fieldState.invalid}>
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent position="popper">{children}</SelectContent>
@@ -149,8 +210,40 @@ function Textarea<T extends FieldValues>({
   );
 }
 
+type FieldSetProps = {
+  title?: string;
+  description?: string;
+  classNames?: {
+    fieldset?: string;
+    title?: string;
+    description?: string;
+    fieldGroup?: string;
+  };
+  children: ReactNode;
+};
+
+function FieldSet({ title, description, classNames, children }: FieldSetProps) {
+  return (
+    <FieldSetBase className={cn(classNames?.fieldset)}>
+      {title && (
+        <FieldLegend className={cn(classNames?.title)}>{title}</FieldLegend>
+      )}
+
+      {description && (
+        <FieldDescription className={cn(classNames?.description)}>
+          {description}
+        </FieldDescription>
+      )}
+
+      <FieldGroup className={cn(classNames?.fieldGroup)}>{children}</FieldGroup>
+    </FieldSetBase>
+  );
+}
+
 Form.Input = Input;
+Form.DateTimeInput = DateTimeInput;
 Form.Select = Select;
 Form.Textarea = Textarea;
+Form.FieldSet = FieldSet;
 
 export { Form };

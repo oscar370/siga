@@ -14,9 +14,9 @@ public class SaleTransaction()
 
   // [1:N]
   public int SaleDetailsId { get; set; }
-  public required SaleDetails SaleDetails { get; set; }
+  public SaleDetails SaleDetails { get; set; } = null!;
 
   // [1:N]
   public int LotId { get; set; }
-  public required Lot Lot { get; set; }
+  public Lot Lot { get; set; } = null!;
 }

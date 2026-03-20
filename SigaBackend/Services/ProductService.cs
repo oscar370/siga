@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using SigaBackend.Data;
 using SigaBackend.DTOs;
 using SigaBackend.Models;
@@ -19,7 +20,7 @@ interface IProductService
 
 public class ProductService(SigaDbContext context) : IProductService
 {
-  private SigaDbContext _context = context;
+  private readonly SigaDbContext _context = context;
 
   public async Task<Results<Created<ProductBasicDto>, BadRequest<string>>> CreateProductAsync(ProductCreateDto dto)
   {
@@ -59,10 +60,10 @@ public class ProductService(SigaDbContext context) : IProductService
         p.BasePrice,
         p.CategoryId,
         p.UnityOfMeasureId,
-        new CategoryBasicDto(p.Category!.CategoryId,
+        new CategoryBasicDto(p.Category.CategoryId,
           p.Category.Name,
           p.Category.Description),
-        new UnityOfMeasureBasicDto(p.UnityOfMeasure!.UnityOfMeasureId,
+        new UnityOfMeasureBasicDto(p.UnityOfMeasure.UnityOfMeasureId,
           p.UnityOfMeasure.Name,
           p.UnityOfMeasure.Abbreviation)
         ))
@@ -117,8 +118,7 @@ public class ProductService(SigaDbContext context) : IProductService
       .FirstAsync();
 
     product.IsActive = false;
-    product.DeletedAt = DateTime.UtcNow;
-
+    product.DeletedAt = DateTimeOffset.UtcNow;
     _context.Products.Update(product);
     await _context.SaveChangesAsync();
 

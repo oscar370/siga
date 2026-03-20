@@ -1,34 +1,20 @@
-"use client";
-
 import { DataField } from "@/components/ui/data-field";
-import { ErrorContent } from "@/components/ui/error-content";
-import { SkeletonDataField } from "@/components/ui/skeleton-data-field";
-import { getUnityOfMeasureById } from "@/services/unity-of-measure/get-unity-of-measure-by-id";
-import { useQuery } from "@tanstack/react-query";
+import { UnityOfMeasureExtended } from "@/types/unity-of-measure/unity-of-measure-extended";
 import { ProductsInUnityOfMeasureTable } from "./products-in-unity-of-measure-table";
 
 type UnityOfMeasureDetailsProps = {
-  id: string;
+  unityOfMeasure: UnityOfMeasureExtended;
 };
 
-export function UnityOfMeasureDetails({ id }: UnityOfMeasureDetailsProps) {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["category", id],
-    queryFn: () => getUnityOfMeasureById(id),
-  });
-
-  if (isError) return <ErrorContent />;
-
-  if (isLoading) return <SkeletonDataField />;
-
-  if (!data) return null;
-
+export function UnityOfMeasureDetails({
+  unityOfMeasure,
+}: UnityOfMeasureDetailsProps) {
   return (
     <div className="space-y-2">
-      <DataField label="Nombre" value={data.name} />
-      <DataField label="Abreviatura" value={data.abbreviation} />
+      <DataField label="Nombre" value={unityOfMeasure.name} />
+      <DataField label="Abreviatura" value={unityOfMeasure.abbreviation} />
       <DataField label="Productos relacionados">
-        <ProductsInUnityOfMeasureTable products={data.products} />
+        <ProductsInUnityOfMeasureTable products={unityOfMeasure.products} />
       </DataField>
     </div>
   );

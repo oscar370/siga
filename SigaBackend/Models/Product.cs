@@ -21,15 +21,15 @@ public class Product()
   public required decimal BasePrice { get; set; }
 
   public bool IsActive { get; set; } = true;
-  public DateTime? DeletedAt { get; set; }
+  public DateTimeOffset? DeletedAt { get; set; }
 
   // [1:N]
   public required int CategoryId { get; set; }
-  public Category? Category { get; set; }
+  public Category Category { get; set; } = null!;
 
   // [1:N]
   public required int UnityOfMeasureId { get; set; }
-  public UnityOfMeasure? UnityOfMeasure { get; set; }
+  public UnityOfMeasure UnityOfMeasure { get; set; } = null!;
 
   // [1:N]
   public ICollection<Lot> Lots { get; set; } = [];

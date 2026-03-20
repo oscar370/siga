@@ -1,72 +1,65 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
-import { supplierCreateSchema } from "@/types/supplier";
+import { createSupplier } from "@/services/supplier/create-supplier";
+import { SupplierCreate, supplierCreateSchema } from "@/types/supplier/create";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createSupplier } from "../../../services/create-supplier";
 
 export function NewSupplier() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
+  const [isPending, startTransition] = useTransition();
+  const { handleSubmit, reset, control } = useForm({
     resolver: zodResolver(supplierCreateSchema),
-  });
-
-  const queryClient = useQueryClient();
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: createSupplier,
-    onSuccess: () => {
-      reset();
-      queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-      toast.success("El proveedor se ha creado");
+    defaultValues: {
+      name: "",
+      taxId: "",
+      contactInfo: "",
     },
-    onError: (r) => toast.error(r.message),
   });
+
+  function onSubmit(data: SupplierCreate) {
+    startTransition(async () => {
+      const response = await createSupplier(data);
+
+      if (!response.ok) {
+        toast.error(response.message);
+        return;
+      }
+
+      toast.success("El proveedor se ha creado");
+      reset();
+    });
+  }
 
   return (
-    <form onSubmit={handleSubmit((data) => mutate(data))}>
-      <FieldGroup>
-        <Field>
-          <FieldLabel>
-            Nombre
-            <span className="text-destructive">*</span>
-          </FieldLabel>
-          <Input {...register("name")} />
-          <FieldError>{errors?.name?.message}</FieldError>
-        </Field>
-        <Field>
-          <FieldLabel>
-            RFC
-            <span className="text-destructive">*</span>
-          </FieldLabel>
-          <Input {...register("taxId")} />
-          <FieldError>{errors?.taxId?.message}</FieldError>
-        </Field>
-        <Field>
-          <FieldLabel>Información de contacto</FieldLabel>
-          <Input {...register("contactInfo")} />
-          <FieldError>{errors?.contactInfo?.message}</FieldError>
-        </Field>
-      </FieldGroup>
+    <Form onSubmit={handleSubmit(onSubmit)}>
+      <Form.Input
+        name="name"
+        control={control}
+        label="Nombre"
+        rules={{ required: true }}
+      />
+
+      <Form.Input
+        name="taxId"
+        control={control}
+        label="RFC"
+        rules={{ required: true }}
+      />
+
+      <Form.Input
+        name="contactInfo"
+        control={control}
+        label="Información de contacto"
+      />
 
       <Button className="w-full mt-4" disabled={isPending}>
         {isPending ? <Spinner /> : "Guardar"}
       </Button>
-    </form>
+    </Form>
   );
 }

@@ -1,17 +1,13 @@
 "use server";
 
-import { handleServiceError } from "@/lib/actions";
-import { api } from "@/lib/api-client";
-import { categoriesBasicSchema } from "@/types/category/basic";
-import * as z from "zod";
+import { fromResponse, validate } from "@/lib/action-helpers";
+import { api } from "@/lib/api-client.server";
+import { categoriesBasicSchema, CategoryBasic } from "@/types/category/basic";
+import { ActionResult } from "@/types/common";
 
-export async function getCategories() {
-  try {
-    const { data } = await api.get("/categories");
-    const result = z.parse(categoriesBasicSchema, data);
-
-    return result;
-  } catch (error) {
-    await handleServiceError(error);
-  }
+export async function getCategories(): Promise<ActionResult<CategoryBasic[]>> {
+  const response = await fromResponse(await api.get("/categories"));
+  if (!response.ok) return response;
+  const result = validate(categoriesBasicSchema, response.data);
+  return result;
 }

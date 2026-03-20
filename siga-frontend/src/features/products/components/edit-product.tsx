@@ -1,95 +1,57 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ErrorContent } from "@/components/ui/error-content";
 import { Form } from "@/components/ui/form";
 import { SelectItem } from "@/components/ui/select";
-import { SkeletonForm } from "@/components/ui/skeleton-form";
 import { Spinner } from "@/components/ui/spinner";
-import { getCategories } from "@/services/category/get-categories";
-import { getProductById } from "@/services/product/get-product-by-id";
 import { updateProduct } from "@/services/product/update-product";
-import { getUnitsOfMeasure } from "@/services/unity-of-measure/get-units-of-measure";
+import { CategoryBasic } from "@/types/category/basic";
 import { ProductBasic, productBasicSchema } from "@/types/product/basic";
+import { ProductExtended } from "@/types/product/extended";
+import { UnitsOfMeasureBasic } from "@/types/unity-of-measure/unity-of-measure-basic";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 type EditProductProps = {
   id: string;
+  product: ProductExtended;
+  categories: CategoryBasic[];
+  unitsOfMeasure: UnitsOfMeasureBasic;
 };
 
-export function EditProduct({ id }: EditProductProps) {
-  const router = useRouter();
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["product", id],
-    queryFn: () => getProductById(id),
-  });
-
-  const {
-    data: categories,
-    isLoading: isCategoriesLoading,
-    isError: isCategoriesError,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: getCategories,
-  });
-
-  const {
-    data: unitsOfMeasure,
-    isLoading: isUnitsOfMeasureLoading,
-    isError: isUnitsOfMeasureError,
-  } = useQuery({
-    queryKey: ["units-of-measure"],
-    queryFn: getUnitsOfMeasure,
-  });
-
-  const { handleSubmit, control, reset } = useForm({
+export function EditProduct({
+  id,
+  product,
+  categories,
+  unitsOfMeasure,
+}: EditProductProps) {
+  const [isPending, startTransition] = useTransition();
+  const { handleSubmit, control } = useForm({
     resolver: zodResolver(productBasicSchema),
     defaultValues: {
-      name: "",
-      sku: "",
-      description: "",
-      basePrice: 0,
-      categoryId: "",
-      unityOfMeasureId: "",
+      ...product,
+      categoryId: String(product.categoryId),
+      unityOfMeasureId: String(product.unityOfMeasureId),
     },
   });
 
-  const queryClient = useQueryClient();
+  function onSubmit(data: ProductBasic) {
+    startTransition(async () => {
+      const response = await updateProduct(id, data);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: (formData: ProductBasic) => updateProduct(id, formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products", "product", id] });
+      if (!response.ok) {
+        toast.error(response.message);
+        return;
+      }
+
       toast.success("El producto se ha actualizado");
-      router.back();
-    },
-    onError: (r) => toast.error(r.message),
-  });
-
-  useEffect(() => {
-    if (!data) return;
-    reset({
-      ...data,
-      categoryId: String(data.categoryId),
-      unityOfMeasureId: String(data.unityOfMeasureId),
     });
-  }, [data, reset]);
-
-  if (isError || isCategoriesError || isUnitsOfMeasureError)
-    return <ErrorContent />;
-
-  if (isLoading || isCategoriesLoading || isUnitsOfMeasureLoading)
-    return <SkeletonForm />;
-
-  if (!data || !categories || !unitsOfMeasure) return null;
+  }
 
   return (
-    <Form onSubmit={handleSubmit((data) => mutate(data))}>
+    <Form onSubmit={handleSubmit(onSubmit)}>
       <Form.Input
         name="name"
         control={control}

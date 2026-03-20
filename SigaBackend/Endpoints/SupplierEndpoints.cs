@@ -12,5 +12,11 @@ public static class SupplierEndpoints
     group.MapPost("/", (SupplierCreateDto dto, ISupplierService service) => service.CreateSupplierAsync(dto)).WithName("CreateSupplier");
 
     group.MapGet("/", (ISupplierService service) => service.GetSuppliersAsync()).WithDisplayName("GetSuppliers");
+
+    group.MapGet("/{id}", (int Id, ISupplierService service) => service.GetSupplierByIdAsync(Id)).WithName("GetSupplierById");
+
+    group.MapPut("/{id}", (int Id, SupplierBasicDto dto, ISupplierService service) => service.UpdateSupplierAsync(Id, dto)).WithName("UpdateSupplier");
+
+    group.MapDelete("/{id}", (int Id, ISupplierService service) => service.DeleteSupplierAsync(Id)).WithName("DeleteSupplier");
   }
 }

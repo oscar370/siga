@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Boxes, Home, Tag, Van, Weight } from "lucide-react";
+import { Box, Boxes, Home, ShoppingBag, Tag, Van, Weight } from "lucide-react";
 import { SidebarGroup, SidebarGroupContent, SidebarMenu } from "../ui/sidebar";
 import { SidebarButton } from "./sidebar-button";
 
@@ -16,7 +16,8 @@ const SIDEBAR_ITEMS = [
   },
   { to: `${BASE_URL}/products`, name: "Productos", icon: Box },
   { to: `${BASE_URL}/suppliers`, name: "Proveedores", icon: Van },
-  { to: `${BASE_URL}/inventory`, name: "Inventario", icon: Boxes },
+  { to: `${BASE_URL}/purchases`, name: "Compras", icon: ShoppingBag },
+  { to: `${BASE_URL}/lots`, name: "Lotes", icon: Boxes },
 ];
 
 export function SidebarContentApp() {
