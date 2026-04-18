@@ -1,10 +1,13 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SigaBackend.Converters;
 using SigaBackend.Data;
 using SigaBackend.Endpoints;
 using SigaBackend.Models;
 using SigaBackend.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,10 +23,27 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddRoles<IdentityRole<int>>()
     .AddEntityFrameworkStores<SigaDbContext>();
+// dotnet dev-certs https --trust
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Policy", policy =>
+    {
+        policy.WithOrigins("https://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 // Services
@@ -34,8 +54,16 @@ builder.Services.AddScoped<IUnityOfMeasureService, UnityOfMeasureService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<ILotService, LotService>();
+builder.Services.AddScoped<ISaleService, SaleService>();
+
+// Converters
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new TrimStringConverter()));
 
 var app = builder.Build();
+
+// CORS
+app.UseCors("Policy");
 
 // Identity Middleware
 app.UseAuthentication();
@@ -82,5 +110,6 @@ app.MapSupplierEndpoints();
 app.MapUnityOfMeasureEndpoints();
 app.MapPurchaseEndpoints();
 app.MapLotEndpoints();
+app.MapSaleEndpoints();
 
 app.Run();

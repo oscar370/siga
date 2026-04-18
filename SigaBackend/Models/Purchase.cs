@@ -1,27 +1,23 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SigaBackend.Enums;
 
 namespace SigaBackend.Models;
 
-public enum Status
-{
-  Completed,
-  Cancelled
-}
+
 
 public class Purchase()
 {
-  public int PurchaseId { get; set; }
+  public int Id { get; set; }
 
-  public required DateTimeOffset OperationDate { get; set; }
-
-  [MaxLength(50)]
-  [MinLength(1)]
+  [MaxLength(50), MinLength(1)]
   public required string ReferenceInvoice { get; set; }
 
-  [Range(0.01, (double)decimal.MaxValue, ErrorMessage = "The amount must be greater than 0")]
+  [Range(0.01, (double)decimal.MaxValue)]
   [Column(TypeName = "decimal(18,2)")]
   public required decimal TotalAmount { get; set; }
+
+  public required DateTimeOffset OperationDate { get; set; }
 
   public required Status Status { get; set; }
 

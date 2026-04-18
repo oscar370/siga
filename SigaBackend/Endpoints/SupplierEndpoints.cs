@@ -9,14 +9,18 @@ public static class SupplierEndpoints
   {
     var group = routes.MapGroup("/api/suppliers");
 
-    group.MapPost("/", (SupplierCreateDto dto, ISupplierService service) => service.CreateSupplierAsync(dto)).WithName("CreateSupplier");
+    group.MapPost("/", (SupplierCreateDto dto, ISupplierService service) => service.CreateSupplierAsync(dto)).WithName("CreateSupplier").RequireAuthorization();
 
-    group.MapGet("/", (ISupplierService service) => service.GetSuppliersAsync()).WithDisplayName("GetSuppliers");
+    group.MapGet("/", ([AsParameters] PaginationParams queryParams, ISupplierService service) => service.GetSuppliersAsync(queryParams)).WithName("GetSuppliers").RequireAuthorization();
 
-    group.MapGet("/{id}", (int Id, ISupplierService service) => service.GetSupplierByIdAsync(Id)).WithName("GetSupplierById");
+    group.MapGet("/{id}", (int Id, ISupplierService service) => service.GetSupplierByIdAsync(Id)).WithName("GetSupplierById").RequireAuthorization();
 
-    group.MapPut("/{id}", (int Id, SupplierBasicDto dto, ISupplierService service) => service.UpdateSupplierAsync(Id, dto)).WithName("UpdateSupplier");
+    group.MapGet("/{id}/purchases", (int Id, [AsParameters] PaginationParams queryParams, ISupplierService service) => service.GetPurchasesBySupplierAsync(Id, queryParams)).WithName("GetPurchasesBySupplier").RequireAuthorization();
 
-    group.MapDelete("/{id}", (int Id, ISupplierService service) => service.DeleteSupplierAsync(Id)).WithName("DeleteSupplier");
+    group.MapGet("/lookup", (ISupplierService service) => service.GetSuppliersLookupAsync()).WithName("GetSuppliersLookup").RequireAuthorization();
+
+    group.MapPut("/{id}", (int Id, SupplierBasicDto dto, ISupplierService service) => service.UpdateSupplierAsync(Id, dto)).WithName("UpdateSupplier").RequireAuthorization();
+
+    group.MapDelete("/{id}", (int Id, ISupplierService service) => service.DeleteSupplierAsync(Id)).WithName("DeleteSupplier").RequireAuthorization();
   }
 }

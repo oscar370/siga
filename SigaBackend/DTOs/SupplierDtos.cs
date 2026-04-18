@@ -2,20 +2,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SigaBackend.DTOs;
 
-public record SupplierCreateDto
+public abstract record SupplierBaseDto
 {
-  private string _name = string.Empty;
-  private string _tax_id = string.Empty;
-
-  [MaxLength(100)]
-  [MinLength(1)]
-  public required string Name { get => _name; set => _name = value.Trim(); }
-  [MaxLength(20)]
-  [MinLength(1)]
-  public required string TaxId { get => _tax_id; set => _tax_id = value.Trim(); }
-  public string ContactInfo { get; set; } = string.Empty;
+  [MaxLength(100), MinLength(1)]
+  public required string Name { get; set; }
+  [MaxLength(20), MinLength(1)]
+  public required string TaxId { get; set; }
+  public string? ContactInfo { get; set; } = null;
 }
 
-public record SupplierBasicDto(int Id, string Name, string TaxId, string ContactInfo);
+public record SupplierCreateDto : SupplierBaseDto;
 
-public record SupplierExtendedDto(int Id, string Name, string TaxId, string ContactInfo, IEnumerable<PurchaseBasicDto> Purchases);
+public record SupplierBasicDto() : SupplierBaseDto
+{
+  public required int Id { get; set; }
+
+}
+
+public record SupplierExtendedDto : SupplierBaseDto
+{
+  public required int Id { get; set; }
+
+  public required ICollection<PurchaseBasicDto> Purchase { get; set; }
+}

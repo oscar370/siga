@@ -157,11 +157,11 @@ namespace SigaBackend.Migrations
 
             modelBuilder.Entity("SigaBackend.Models.Category", b =>
                 {
-                    b.Property<int>("CategoryId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("datetimeoffset");
@@ -178,18 +178,18 @@ namespace SigaBackend.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("CategoryId");
+                    b.HasKey("Id");
 
                     b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("SigaBackend.Models.Lot", b =>
                 {
-                    b.Property<int>("LotId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LotId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("AvailableQuantity")
                         .HasColumnType("decimal(18,4)");
@@ -220,7 +220,7 @@ namespace SigaBackend.Migrations
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("LotId");
+                    b.HasKey("Id");
 
                     b.HasIndex("PurchaseId");
 
@@ -231,11 +231,11 @@ namespace SigaBackend.Migrations
 
             modelBuilder.Entity("SigaBackend.Models.Product", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("BasePrice")
                         .HasColumnType("decimal(18,2)");
@@ -247,7 +247,6 @@ namespace SigaBackend.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -267,7 +266,7 @@ namespace SigaBackend.Migrations
                     b.Property<int>("UnityOfMeasureId")
                         .HasColumnType("int");
 
-                    b.HasKey("ProductId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
@@ -278,11 +277,11 @@ namespace SigaBackend.Migrations
 
             modelBuilder.Entity("SigaBackend.Models.Purchase", b =>
                 {
-                    b.Property<int>("PurchaseId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PurchaseId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("OperationDate")
                         .HasColumnType("datetimeoffset");
@@ -304,7 +303,7 @@ namespace SigaBackend.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("PurchaseId");
+                    b.HasKey("Id");
 
                     b.HasIndex("SupplierId");
 
@@ -315,14 +314,19 @@ namespace SigaBackend.Migrations
 
             modelBuilder.Entity("SigaBackend.Models.Sale", b =>
                 {
-                    b.Property<int>("SaleId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SaleId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("OperationDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ReferenceInvoice")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -333,7 +337,7 @@ namespace SigaBackend.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("SaleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
@@ -342,11 +346,11 @@ namespace SigaBackend.Migrations
 
             modelBuilder.Entity("SigaBackend.Models.SaleDetails", b =>
                 {
-                    b.Property<int>("SaleDetailsId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SaleDetailsId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
@@ -360,7 +364,7 @@ namespace SigaBackend.Migrations
                     b.Property<decimal>("UnitSellingPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("SaleDetailsId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductId");
 
@@ -371,11 +375,11 @@ namespace SigaBackend.Migrations
 
             modelBuilder.Entity("SigaBackend.Models.SaleTransaction", b =>
                 {
-                    b.Property<int>("SaleTransactionId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SaleTransactionId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("LotId")
                         .HasColumnType("int");
@@ -389,7 +393,7 @@ namespace SigaBackend.Migrations
                     b.Property<decimal>("UnitCostApplied")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("SaleTransactionId");
+                    b.HasKey("Id");
 
                     b.HasIndex("LotId");
 
@@ -400,14 +404,13 @@ namespace SigaBackend.Migrations
 
             modelBuilder.Entity("SigaBackend.Models.Supplier", b =>
                 {
-                    b.Property<int>("SupplierId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SupplierId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ContactInfo")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("DeletedAt")
@@ -426,18 +429,18 @@ namespace SigaBackend.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.HasKey("SupplierId");
+                    b.HasKey("Id");
 
                     b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("SigaBackend.Models.UnityOfMeasure", b =>
                 {
-                    b.Property<int>("UnityOfMeasureId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UnityOfMeasureId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
@@ -449,7 +452,7 @@ namespace SigaBackend.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("UnityOfMeasureId");
+                    b.HasKey("Id");
 
                     b.ToTable("UnityOfMeasures");
                 });

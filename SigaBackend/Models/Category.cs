@@ -4,9 +4,9 @@ namespace SigaBackend.Models;
 
 public class Category
 {
-  public int CategoryId { get; set; }
+  public int Id { get; set; }
 
-  [MaxLength(50)]
+  [MaxLength(50), MinLength(1)]
   public required string Name { get; set; }
 
   [MaxLength(200)]

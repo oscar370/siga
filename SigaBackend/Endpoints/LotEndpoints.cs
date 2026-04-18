@@ -1,3 +1,4 @@
+using SigaBackend.DTOs;
 using SigaBackend.Services;
 
 namespace SigaBackend.Endpoints;
@@ -8,8 +9,8 @@ public static class LotEndpoints
   {
     var group = router.MapGroup("/api/lots");
 
-    group.MapGet("/", (ILotService service) => service.GetLotsAsync()).WithName("GetLots");
+    group.MapGet("/", ([AsParameters] PaginationParams queryParams, ILotService service) => service.GetLotsAsync(queryParams)).WithName("GetLots").RequireAuthorization();
 
-    group.MapGet("/{Id}", (int Id, ILotService service) => service.GetLotByIdAsync(Id));
+    group.MapGet("/{id}", (int Id, ILotService service) => service.GetLotByIdAsync(Id)).WithName("GetLotById").RequireAuthorization();
   }
 }

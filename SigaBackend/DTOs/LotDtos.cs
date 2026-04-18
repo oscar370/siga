@@ -1,5 +1,34 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SigaBackend.DTOs;
 
-public record LotBasicDto(int Id, string LotCode, DateTimeOffset EntryDate, decimal UnitCost, decimal AvailableQuantity, int ProductId, int PurchaseId, ProductBasicDto Product);
+public abstract record LotBaseDto
+{
+  public required int Id { get; set; }
 
-public record LotExpandedDto(int Id, string LotCode, DateTimeOffset EntryDate, decimal UnitCost, decimal AvailableQuantity, int ProductId, int PurchaseId, ProductBasicDto Product, PurchaseBasicDto Purchase, IEnumerable<SaleTransactionDto> Transaction);
+  [MaxLength(100), MinLength(1)]
+  public required string LotCode { get; set; }
+
+  public required DateTimeOffset EntryDate { get; set; }
+
+  [Range(0.01, (double)decimal.MaxValue)]
+  public required decimal UnitCost { get; set; }
+
+  [Range(0.0001, (double)decimal.MaxValue)]
+  public required decimal AvailableQuantity { get; set; }
+
+  public required int ProductId { get; set; }
+
+  public required int PurchaseId { get; set; }
+
+  public required ProductBasicDto Product { get; set; }
+}
+
+public record LotBasicDto : LotBaseDto;
+
+public record LotExtended : LotBaseDto
+{
+  public required PurchaseBasicDto Purchase { get; set; }
+};
+
+// IEnumerable<SaleTransactionDto> Transaction

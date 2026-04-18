@@ -1,3 +1,4 @@
+using Mapster;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +13,15 @@ namespace SigaBackend.Services;
 interface IProductService
 {
   Task<Results<Created<ProductBasicDto>, BadRequest<string>>> CreateProductAsync(ProductCreateDto dto);
-  Task<Results<Ok<List<ProductExtendedDto>>, NotFound>> GetProductsAsync();
-  Task<Results<Ok<ProductExtendedDto>, NotFound>> GetProductByIdAsync(int Id);
+
+  Task<Ok<PagedList<ProductExtendedDto>>> GetProductsAsync(PaginationParams queryParams);
+
+  Task<Results<Ok<ProductExtendedDto>, NotFound<string>>> GetProductByIdAsync(int Id);
+
+  Task<Ok<List<LookupDto>>> GetProductsLookupAsync();
+
   Task<Results<Ok<ProductBasicDto>, BadRequest<string>>> UpdateProductAsync(int Id, ProductBasicDto dto);
+
   Task<Results<Ok<int>, BadRequest<string>>> DeleteProductAsync(int Id);
 }
 
@@ -24,79 +31,82 @@ public class ProductService(SigaDbContext context) : IProductService
 
   public async Task<Results<Created<ProductBasicDto>, BadRequest<string>>> CreateProductAsync(ProductCreateDto dto)
   {
-    bool categoryExist = await _context.Categories.AnyAsync(c => c.CategoryId == dto.CategoryId);
+    bool categoryExist = await _context.Categories.AnyAsync(c => c.Id == dto.CategoryId);
 
-    if (!categoryExist)
-    {
-      return TypedResults.BadRequest("The category does not exist");
-    }
+    if (!categoryExist) return TypedResults.BadRequest("The category does not exist");
 
-    var product = new Product
-    {
-      Name = dto.Name,
-      SKU = dto.SKU,
-      Description = dto.Description,
-      BasePrice = dto.BasePrice,
-      CategoryId = dto.CategoryId,
-      UnityOfMeasureId = dto.UnityOfMeasureId
-    };
+    var product = dto.Adapt<Product>();
 
     _context.Products.Add(product);
     await _context.SaveChangesAsync();
 
-    var result = new ProductBasicDto(product.ProductId, product.Name, product.SKU, product.Description, product.BasePrice, product.CategoryId, product.UnityOfMeasureId);
+    var result = product.Adapt<ProductBasicDto>();
 
-    return TypedResults.Created($"/api/products/{product.ProductId}", result);
+    return TypedResults.Created($"/api/products/{result.Id}", result);
   }
 
-  public async Task<Results<Ok<List<ProductExtendedDto>>, NotFound>> GetProductsAsync()
+  public async Task<Ok<PagedList<ProductExtendedDto>>> GetProductsAsync(PaginationParams queryParams)
+  {
+    var query = _context.Products
+      .AsNoTracking()
+      .Where(c => c.IsActive && c.DeletedAt == null);
+
+    if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+      query = query.Where(c => c.Name.Contains(queryParams.SearchTerm));
+
+    var totalCount = await query.CountAsync();
+    var page = queryParams.PageNumber < 1 ? 1 : queryParams.PageNumber;
+    var skip = (page - 1) * queryParams.PageSize;
+
+    var products = await query
+      .OrderBy(c => c.Name)
+      .Skip(Math.Max(0, skip))
+      .Take(queryParams.PageSize)
+      .ProjectToType<ProductExtendedDto>()
+      .ToListAsync();
+
+    var pagedResults = new PagedList<ProductExtendedDto>(
+      products,
+      totalCount,
+      queryParams.PageNumber,
+      queryParams.PageSize
+    );
+
+    return TypedResults.Ok(pagedResults);
+  }
+
+  public async Task<Results<Ok<ProductExtendedDto>, NotFound<string>>> GetProductByIdAsync(int Id)
+  {
+    var product = await _context.Products
+      .AsNoTracking()
+      .Where(p => p.Id == Id && p.IsActive && p.DeletedAt == null)
+      .ProjectToType<ProductExtendedDto>()
+      .FirstOrDefaultAsync();
+
+    if (product is null) return TypedResults.NotFound("The product was not found");
+
+    return TypedResults.Ok(product);
+  }
+
+  public async Task<Ok<List<LookupDto>>> GetProductsLookupAsync()
   {
     var products = await _context.Products
+      .AsNoTracking()
       .Where(p => p.IsActive && p.DeletedAt == null)
-      .Select(p => new ProductExtendedDto(p.ProductId,
-        p.Name,
-        p.SKU,
-        p.Description,
-        p.BasePrice,
-        p.CategoryId,
-        p.UnityOfMeasureId,
-        new CategoryBasicDto(p.Category.CategoryId,
-          p.Category.Name,
-          p.Category.Description),
-        new UnityOfMeasureBasicDto(p.UnityOfMeasure.UnityOfMeasureId,
-          p.UnityOfMeasure.Name,
-          p.UnityOfMeasure.Abbreviation)
-        ))
+      .OrderBy(p => p.Name)
+      .ProjectToType<LookupDto>()
       .ToListAsync();
 
     return TypedResults.Ok(products);
   }
 
-  public async Task<Results<Ok<ProductExtendedDto>, NotFound>> GetProductByIdAsync(int Id)
-  {
-    var product = await _context.Products
-      .Where(p => p.ProductId == Id && p.IsActive && p.DeletedAt == null)
-      .Select(p => new ProductExtendedDto(
-        p.ProductId,
-        p.Name,
-        p.SKU,
-        p.Description,
-        p.BasePrice,
-        p.CategoryId,
-        p.UnityOfMeasureId,
-        new CategoryBasicDto(p.Category!.CategoryId, p.Category.Name, p.Category.Description),
-        new UnityOfMeasureBasicDto(p.UnityOfMeasure!.UnityOfMeasureId, p.UnityOfMeasure.Name, p.UnityOfMeasure.Abbreviation)
-      ))
-      .FirstAsync();
-
-    return TypedResults.Ok(product);
-  }
-
   public async Task<Results<Ok<ProductBasicDto>, BadRequest<string>>> UpdateProductAsync(int Id, ProductBasicDto dto)
   {
     var product = await _context.Products
-      .Where(p => p.ProductId == Id && p.IsActive && p.DeletedAt == null)
-      .FirstAsync();
+      .Where(p => p.Id == Id && p.IsActive && p.DeletedAt == null)
+      .FirstOrDefaultAsync();
+
+    if (product is null) return TypedResults.BadRequest("The product was not found");
 
     product.Name = dto.Name;
     product.SKU = dto.SKU;
@@ -114,8 +124,10 @@ public class ProductService(SigaDbContext context) : IProductService
   public async Task<Results<Ok<int>, BadRequest<string>>> DeleteProductAsync(int Id)
   {
     var product = await _context.Products
-      .Where(p => p.ProductId == Id && p.IsActive && p.DeletedAt == null)
-      .FirstAsync();
+      .Where(p => p.Id == Id && p.IsActive && p.DeletedAt == null)
+      .FirstOrDefaultAsync();
+
+    if (product is null) return TypedResults.BadRequest("The product was not found");
 
     product.IsActive = false;
     product.DeletedAt = DateTimeOffset.UtcNow;

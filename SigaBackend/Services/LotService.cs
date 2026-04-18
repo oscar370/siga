@@ -1,3 +1,4 @@
+using Mapster;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using SigaBackend.Data;
@@ -7,77 +8,51 @@ namespace SigaBackend.Services;
 
 interface ILotService
 {
-  Task<Results<Ok<List<LotBasicDto>>, NotFound>> GetLotsAsync();
-  Task<Results<Ok<LotExpandedDto>, NotFound>> GetLotByIdAsync(int Id);
+  Task<Ok<PagedList<LotBasicDto>>> GetLotsAsync(PaginationParams queryParams);
+  Task<Results<Ok<LotExtended>, NotFound<string>>> GetLotByIdAsync(int Id);
 }
 
 public class LotService(SigaDbContext context) : ILotService
 {
   private readonly SigaDbContext _context = context;
 
-  public async Task<Results<Ok<List<LotBasicDto>>, NotFound>> GetLotsAsync()
+  public async Task<Ok<PagedList<LotBasicDto>>> GetLotsAsync(PaginationParams queryParams)
   {
-    var lots = await _context.Lots.Select(l => new LotBasicDto(
-      l.LotId,
-      l.LotCode,
-      l.EntryDate,
-      l.UnitCost,
-      l.AvailableQuantity,
-      l.ProductId,
-      l.PurchaseId,
-      new ProductBasicDto(
-        l.Product.ProductId,
-        l.Product.Name,
-        l.Product.SKU,
-        l.Product.Description,
-        l.Product.BasePrice,
-        l.Product.CategoryId,
-        l.Product.UnityOfMeasureId
-      )
-    ))
-    .ToListAsync();
+    var query = _context.Lots
+      .AsNoTracking();
 
-    return TypedResults.Ok(lots);
+    if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+      query = query.Where(p => p.LotCode.Contains(queryParams.SearchTerm));
+
+    var totalCount = await query.CountAsync();
+    var page = queryParams.PageNumber < 1 ? 1 : queryParams.PageNumber;
+    var skip = (page - 1) * queryParams.PageSize;
+
+    var lots = await query
+      .OrderBy(l => l.EntryDate)
+      .Skip(Math.Max(0, skip))
+      .Take(queryParams.PageSize)
+      .ProjectToType<LotBasicDto>()
+      .ToListAsync();
+
+    var pagedResults = new PagedList<LotBasicDto>(
+     lots,
+     totalCount,
+     queryParams.PageNumber,
+     queryParams.PageSize
+   );
+
+    return TypedResults.Ok(pagedResults);
   }
 
-  public async Task<Results<Ok<LotExpandedDto>, NotFound>> GetLotByIdAsync(int Id)
+  public async Task<Results<Ok<LotExtended>, NotFound<string>>> GetLotByIdAsync(int Id)
   {
     var lot = await _context.Lots
-      .Where(l => l.LotId == Id)
-      .Select(l => new LotExpandedDto(
-        l.LotId,
-        l.LotCode,
-        l.EntryDate,
-        l.UnitCost,
-        l.AvailableQuantity,
-        l.ProductId,
-        l.ProductId,
-        new ProductBasicDto(
-          l.Product.ProductId,
-          l.Product.Name,
-          l.Product.SKU,
-          l.Product.Description,
-          l.Product.BasePrice,
-          l.Product.CategoryId,
-          l.Product.UnityOfMeasureId
-        ),
-        new PurchaseBasicDto(
-          l.Purchase.PurchaseId,
-          l.Purchase.ReferenceInvoice,
-          l.Purchase.OperationDate,
-          l.Purchase.TotalAmount,
-          l.Purchase.Status,
-          l.Purchase.SupplierId,
-          l.Purchase.UserId
-        ),
-        l.Transactions.Select(t => new SaleTransactionDto(
-          t.QuantitySold,
-          t.UnitCostApplied,
-          t.SaleDetailsId,
-          t.LotId
-        ))
-      ))
-      .FirstAsync();
+      .Where(l => l.Id == Id)
+      .ProjectToType<LotExtended>()
+      .FirstOrDefaultAsync();
+
+    if (lot is null) return TypedResults.NotFound("The lot was not found");
 
     return TypedResults.Ok(lot);
   }

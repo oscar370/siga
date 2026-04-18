@@ -10,12 +10,14 @@ public static class PurchaseEndpoints
   {
     var group = builder.MapGroup("/api/purchases");
 
-    group.MapPost("/", (PurchaseCreateDto dto, ClaimsPrincipal claims, IPurchaseService service) => service.CreatePurchaseAsync(dto, claims));
+    group.MapPost("/", (PurchaseCreateDto dto, ClaimsPrincipal claims, IPurchaseService service) => service.CreatePurchaseAsync(dto, claims)).WithName("CreatePurchase").RequireAuthorization();
 
-    group.MapGet("/", (IPurchaseService service) => service.GetPurchasesAsync());
+    group.MapGet("/", ([AsParameters] PaginationParams queryParams, IPurchaseService service) => service.GetPurchasesAsync(queryParams)).WithName("GetPurchases").RequireAuthorization();
 
-    group.MapGet("/{Id}", (int Id, IPurchaseService service) => service.GetPurchaseByIdAsync(Id));
+    group.MapGet("/{id}", (int Id, IPurchaseService service) => service.GetPurchaseByIdAsync(Id)).WithName("GetPurchaseById").RequireAuthorization();
 
-    group.MapDelete("/{Id}", (int Id, IPurchaseService service) => service.CancelPurchaseAsync(Id));
+    group.MapGet("/{id}/lots", (int Id, [AsParameters] PaginationParams queryParams, IPurchaseService service) => service.GetLotsByPurchaseAsync(Id, queryParams)).WithName("GetLotsByPurchase").RequireAuthorization();
+
+    group.MapDelete("/{id}", (int Id, IPurchaseService service) => service.CancelPurchaseAsync(Id)).WithName("CancelPurchase").RequireAuthorization();
   }
 }

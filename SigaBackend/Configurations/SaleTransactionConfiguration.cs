@@ -16,6 +16,6 @@ public class SaleTransactionConfiguration : IEntityTypeConfiguration<SaleTransac
     builder.HasOne(st => st.Lot)
       .WithMany(l => l.Transactions)
       .HasForeignKey(st => st.LotId)
-      .HasPrincipalKey(l => l.LotId);
+      .HasPrincipalKey(l => l.Id);
   }
 }

@@ -9,14 +9,18 @@ public static class UnityOfMeasureEndpoints
   {
     var group = routes.MapGroup("/api/units-of-measure");
 
-    group.MapPost("/", (UnityOfMeasureCreateDto dto, IUnityOfMeasureService service) => service.CreateUnityOfMeasureAsync(dto)).WithName("CreateUnityOfMeasure");
+    group.MapPost("/", (UnityOfMeasureCreateDto dto, IUnityOfMeasureService service) => service.CreateUnityOfMeasureAsync(dto)).WithName("CreateUnityOfMeasure").RequireAuthorization();
 
-    group.MapGet("/", (IUnityOfMeasureService service) => service.GetUnitsOfMeasureAsync()).WithName("GetUnitsOfMeasure");
+    group.MapGet("/", ([AsParameters] PaginationParams queryParams, IUnityOfMeasureService service) => service.GetUnitsOfMeasureAsync(queryParams)).WithName("GetUnitsOfMeasure").RequireAuthorization();
 
-    group.MapGet("/{Id}", (int Id, IUnityOfMeasureService service) => service.GetUnityOfMeasureByIdAsync(Id));
+    group.MapGet("/{id}", (int Id, IUnityOfMeasureService service) => service.GetUnityOfMeasureByIdAsync(Id)).WithName("GetUnityOfMeasureById").RequireAuthorization();
 
-    group.MapPut("/{Id}", (int Id, UnityOfMeasureBasicDto dto, IUnityOfMeasureService service) => service.UpdateUnityOfMeasureAsync(Id, dto)).WithName("UpdateUnityOfMeasure");
+    group.MapGet("/{id}/products", (int Id, [AsParameters] PaginationParams queryParams, IUnityOfMeasureService service) => service.GetProductsByUnityOfMeasureAsync(Id, queryParams)).WithName("GetProductsByUnityOfMeasure").RequireAuthorization();
 
-    group.MapDelete("/{Id}", (int Id, IUnityOfMeasureService service) => service.DeleteUnityOfMeasureAsync(Id)).WithName("DeleteUnityOfMeasure");
+    group.MapGet("/lookup", (IUnityOfMeasureService service) => service.GetUnitsOfMeasureLookupAsync()).WithName("GetUnitsOfMeasureLookup").RequireAuthorization();
+
+    group.MapPut("/{id}", (int Id, UnityOfMeasureBasicDto dto, IUnityOfMeasureService service) => service.UpdateUnityOfMeasureAsync(Id, dto)).WithName("UpdateUnityOfMeasure").RequireAuthorization();
+
+    group.MapDelete("/{id}", (int Id, IUnityOfMeasureService service) => service.DeleteUnityOfMeasureAsync(Id)).WithName("DeleteUnityOfMeasure").RequireAuthorization();
   }
 }

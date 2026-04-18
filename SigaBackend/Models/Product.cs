@@ -5,18 +5,18 @@ namespace SigaBackend.Models;
 
 public class Product()
 {
-  public int ProductId { get; set; }
+  public int Id { get; set; }
 
-  [MaxLength(50)]
+  [MaxLength(50), MinLength(1)]
   public required string Name { get; set; }
 
-  [MaxLength(50)]
+  [MaxLength(50), MinLength(1)]
   public required string SKU { get; set; }
 
   [MaxLength(200)]
-  public string Description { get; set; } = string.Empty;
+  public string? Description { get; set; } = null;
 
-  [Range(0.01, (double)decimal.MaxValue, ErrorMessage = "The price must be greater than 0")]
+  [Range(0.01, (double)decimal.MaxValue)]
   [Column(TypeName = "decimal(18,2)")]
   public required decimal BasePrice { get; set; }
 

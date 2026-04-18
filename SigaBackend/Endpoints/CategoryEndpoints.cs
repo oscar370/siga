@@ -9,14 +9,18 @@ public static class CategoryEndpoints
   {
     var group = routes.MapGroup("/api/categories");
 
-    group.MapPost("/", (CategoryCreateDto category, ICategoryService service) => service.CreateCategoryAsync(category)).WithName("CreateCategory");
+    group.MapPost("/", (CategoryCreateDto category, ICategoryService service) => service.CreateCategoryAsync(category)).WithName("CreateCategory").RequireAuthorization();
 
-    group.MapGet("/", (ICategoryService service) => service.GetCategoriesAsync()).WithName("GetCategories");
+    group.MapGet("/", ([AsParameters] PaginationParams queryParams, ICategoryService service) => service.GetCategoriesAsync(queryParams)).WithName("GetCategories").RequireAuthorization();
 
-    group.MapGet("/{Id}", (int Id, ICategoryService service) => service.GetCategoryByIdAsync(Id)).WithName("GetCategoryById");
+    group.MapGet("/{id}", (int Id, ICategoryService service) => service.GetCategoryByIdAsync(Id)).WithName("GetCategoryById").RequireAuthorization();
 
-    group.MapPut("/{Id}", (int Id, CategoryBasicDto dto, ICategoryService service) => service.UpdateCategoryAsync(Id, dto)).WithName("UpdateCategory");
+    group.MapGet("/{id}/products", (int Id, [AsParameters] PaginationParams queryParams, ICategoryService service) => service.GetProductsByCategoryAsync(Id, queryParams)).WithName("GetProductsByCategory").RequireAuthorization();
 
-    group.MapDelete("/{Id}", (int Id, ICategoryService service) => service.DeleteCategoryAsync(Id)).WithName("DeleteCategory");
+    group.MapGet("/lookup", (ICategoryService service) => service.GetCategoriesLookupAsync()).WithName("GetCategoriesLookup").RequireAuthorization();
+
+    group.MapPut("/{id}", (int Id, CategoryBasicDto dto, ICategoryService service) => service.UpdateCategoryAsync(Id, dto)).WithName("UpdateCategory").RequireAuthorization();
+
+    group.MapDelete("/{id}", (int Id, ICategoryService service) => service.DeleteCategoryAsync(Id)).WithName("DeleteCategory").RequireAuthorization();
   }
 }

@@ -1,3 +1,4 @@
+using Mapster;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using SigaBackend.Data;
@@ -9,9 +10,17 @@ namespace SigaBackend.Services;
 interface ISupplierService
 {
   Task<Results<Created<SupplierBasicDto>, BadRequest<string>>> CreateSupplierAsync(SupplierCreateDto dto);
-  Task<Results<Ok<List<SupplierBasicDto>>, NotFound>> GetSuppliersAsync();
-  Task<Results<Ok<SupplierExtendedDto>, NotFound>> GetSupplierByIdAsync(int Id);
+
+  Task<Ok<PagedList<SupplierBasicDto>>> GetSuppliersAsync(PaginationParams queryParams);
+
+  Task<Results<Ok<SupplierBasicDto>, NotFound<string>>> GetSupplierByIdAsync(int Id);
+
+  Task<Ok<PagedList<PurchaseBasicDto>>> GetPurchasesBySupplierAsync(int Id, PaginationParams queryParams);
+
+  Task<Ok<List<LookupDto>>> GetSuppliersLookupAsync();
+
   Task<Results<Ok<SupplierBasicDto>, BadRequest<string>>> UpdateSupplierAsync(int Id, SupplierBasicDto dto);
+
   Task<Results<Ok<int>, BadRequest<string>>> DeleteSupplierAsync(int Id);
 }
 
@@ -21,59 +30,105 @@ public class SupplierService(SigaDbContext context) : ISupplierService
 
   public async Task<Results<Created<SupplierBasicDto>, BadRequest<string>>> CreateSupplierAsync(SupplierCreateDto dto)
   {
-    var supplier = new Supplier
-    {
-      Name = dto.Name,
-      TaxId = dto.TaxId,
-      ContactInfo = dto.ContactInfo
-    };
+    var supplier = dto.Adapt<Supplier>();
 
     _context.Suppliers.Add(supplier);
     await _context.SaveChangesAsync();
 
-    var result = new SupplierBasicDto(supplier.SupplierId, supplier.Name, supplier.TaxId, supplier.ContactInfo);
+    var result = supplier.Adapt<SupplierBasicDto>();
 
-    return TypedResults.Created($"/api/suppliers/{supplier.SupplierId}", result);
+    return TypedResults.Created($"/api/suppliers/{result.Id}", result);
   }
 
-  public async Task<Results<Ok<List<SupplierBasicDto>>, NotFound>> GetSuppliersAsync()
+  public async Task<Ok<PagedList<SupplierBasicDto>>> GetSuppliersAsync(PaginationParams queryParams)
   {
-    var suppliers = await _context.Suppliers
-      .Where(s => s.IsActive && s.DeletedAt == null)
-      .Select(s => new SupplierBasicDto(s.SupplierId, s.Name, s.TaxId, s.ContactInfo))
+    var query = _context.Suppliers
+      .AsNoTracking()
+      .Where(s => s.IsActive && s.DeletedAt == null);
+
+    if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+      query = query.Where(c => c.Name.Contains(queryParams.SearchTerm));
+
+    var totalCount = await query.CountAsync();
+    var page = queryParams.PageNumber < 1 ? 1 : queryParams.PageNumber;
+    var skip = (page - 1) * queryParams.PageSize;
+
+    var suppliers = await query
+      .OrderBy(s => s.Name)
+      .Skip(Math.Max(0, skip))
+      .Take(queryParams.PageSize)
+      .ProjectToType<SupplierBasicDto>()
       .ToListAsync();
 
-    return TypedResults.Ok(suppliers);
+    var pagedResults = new PagedList<SupplierBasicDto>(
+      suppliers,
+      totalCount,
+      queryParams.PageNumber,
+      queryParams.PageSize
+    );
+
+    return TypedResults.Ok(pagedResults);
   }
 
-  public async Task<Results<Ok<SupplierExtendedDto>, NotFound>> GetSupplierByIdAsync(int Id)
+  public async Task<Results<Ok<SupplierBasicDto>, NotFound<string>>> GetSupplierByIdAsync(int Id)
   {
     var supplier = await _context.Suppliers
-      .Where(s => s.SupplierId == Id)
-      .Select(s => new SupplierExtendedDto(
-        s.SupplierId,
-        s.Name,
-        s.TaxId,
-        s.ContactInfo,
-        s.Purchases.Select(p => new PurchaseBasicDto(
-          p.PurchaseId,
-          p.ReferenceInvoice,
-          p.OperationDate,
-          p.TotalAmount,
-          p.Status,
-          p.SupplierId,
-          p.UserId
-        ))
-      ))
-      .FirstAsync();
+      .AsNoTracking()
+      .Where(s => s.Id == Id && s.IsActive && s.DeletedAt == null)
+      .ProjectToType<SupplierBasicDto>()
+      .FirstOrDefaultAsync();
+
+    if (supplier is null) return TypedResults.NotFound("The supplier was not found");
 
     return TypedResults.Ok(supplier);
+  }
+
+  public async Task<Ok<PagedList<PurchaseBasicDto>>> GetPurchasesBySupplierAsync(int Id, PaginationParams queryParams)
+  {
+    var query = _context.Purchases
+      .AsNoTracking()
+      .Where((p) => p.SupplierId == Id);
+
+    if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+      query = query.Where(p => p.ReferenceInvoice.Contains(queryParams.SearchTerm));
+
+    var totalCount = await query.CountAsync();
+    var page = queryParams.PageNumber < 1 ? 1 : queryParams.PageNumber;
+    var skip = (page - 1) * queryParams.PageSize;
+
+    var purchases = await query
+      .OrderBy(p => p.OperationDate)
+      .Skip(Math.Max(0, skip))
+      .Take(queryParams.PageSize)
+      .ProjectToType<PurchaseBasicDto>()
+      .ToListAsync();
+
+    var pagedResults = new PagedList<PurchaseBasicDto>(
+     purchases,
+     totalCount,
+     queryParams.PageNumber,
+     queryParams.PageSize
+   );
+
+    return TypedResults.Ok(pagedResults);
+  }
+
+  public async Task<Ok<List<LookupDto>>> GetSuppliersLookupAsync()
+  {
+    var categories = await _context.Suppliers
+      .AsNoTracking()
+      .Where(s => s.IsActive && s.DeletedAt == null)
+      .OrderBy(s => s.Name)
+      .ProjectToType<LookupDto>()
+      .ToListAsync();
+
+    return TypedResults.Ok(categories);
   }
 
   public async Task<Results<Ok<SupplierBasicDto>, BadRequest<string>>> UpdateSupplierAsync(int Id, SupplierBasicDto dto)
   {
     var supplier = await _context.Suppliers
-      .Where(s => s.SupplierId == Id)
+      .Where(s => s.Id == Id)
       .FirstAsync();
 
     supplier.Name = dto.Name;
@@ -82,20 +137,13 @@ public class SupplierService(SigaDbContext context) : ISupplierService
 
     await _context.SaveChangesAsync();
 
-    var result = new SupplierBasicDto(
-      supplier.SupplierId,
-      supplier.Name,
-      supplier.TaxId,
-      supplier.ContactInfo
-    );
-
-    return TypedResults.Ok(result);
+    return TypedResults.Ok(dto);
   }
 
   public async Task<Results<Ok<int>, BadRequest<string>>> DeleteSupplierAsync(int Id)
   {
     var supplier = await _context.Suppliers
-      .Where(s => s.SupplierId == Id)
+      .Where(s => s.Id == Id)
       .FirstAsync();
 
     supplier.IsActive = false;

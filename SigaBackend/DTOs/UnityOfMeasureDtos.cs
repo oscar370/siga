@@ -2,20 +2,25 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SigaBackend.DTOs;
 
-public record UnityOfMeasureCreateDto
+public abstract record UnityOfMeasureBaseDto
 {
-  private string _name = string.Empty;
-  private string _abbreviation = string.Empty;
+  [MaxLength(50), MinLength(1)]
+  public required string Name { get; set; }
 
-  [MaxLength(50)]
-  [MinLength(1)]
-  public string Name { get => _name; set => _name = value.Trim(); }
-
-  [MaxLength(10)]
-  [MinLength(1)]
-  public string Abbreviation { get => _abbreviation; set => _abbreviation = value.Trim(); }
+  [MaxLength(10), MinLength(1)]
+  public required string Abbreviation { get; set; }
 }
 
-public record UnityOfMeasureBasicDto(int Id, string Name, string Abbreviation);
+public record UnityOfMeasureCreateDto : UnityOfMeasureBaseDto;
 
-public record UnityOfMeasureExtendedDto(int Id, string Name, string Abbreviation, List<ProductBasicDto> Products);
+public record UnityOfMeasureBasicDto : UnityOfMeasureBaseDto
+{
+  public required int Id { get; set; }
+}
+
+public record UnityOfMeasureExtendedDto : UnityOfMeasureBaseDto
+{
+  public required int Id { get; set; }
+
+  public required ICollection<ProductBasicDto> Products { get; set; }
+}

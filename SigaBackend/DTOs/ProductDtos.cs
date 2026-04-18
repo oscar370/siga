@@ -1,36 +1,36 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using SigaBackend.Models;
 
 namespace SigaBackend.DTOs;
 
-public record ProductCreateDto
+public abstract record ProductBaseDto
 {
-  private string _name = string.Empty;
-  private string _sku = string.Empty;
-  private string _description = string.Empty;
+  [MaxLength(50), MinLength(1)]
+  public required string Name { get; set; }
 
-  [MaxLength(50)]
-  [MinLength(1)]
-  public required string Name { get => _name; set => _name = value.Trim(); }
-
-  [MaxLength(50)]
-  [MinLength(1)]
-  public required string SKU { get => _sku; set => _sku = value.Trim(); }
+  [MaxLength(50), MinLength(1)]
+  public required string SKU { get; set; }
 
   [MaxLength(200)]
-  public string Description { get => _description; set => _description = value.Trim(); }
+  public string? Description { get; set; }
 
-  [Range(0.01, (double)decimal.MaxValue, ErrorMessage = "The price must be greater than 0")]
-  [Column(TypeName = "decimal(18,2)")]
+  [Range(0.01, (double)decimal.MaxValue)]
   public required decimal BasePrice { get; set; }
-
   public required int CategoryId { get; set; }
-
   public required int UnityOfMeasureId { get; set; }
-
 }
 
-public record ProductBasicDto(int Id, string Name, string SKU, string Description, decimal BasePrice, int CategoryId, int UnityOfMeasureId);
+public record ProductCreateDto : ProductBaseDto;
 
-public record ProductExtendedDto(int Id, string Name, string SKU, string Description, decimal BasePrice, int CategoryId, int UnityOfMeasureId, CategoryBasicDto Category, UnityOfMeasureBasicDto UnityOfMeasure);
+public record ProductBasicDto : ProductBaseDto
+{
+  public int Id { get; set; }
+}
+
+public record ProductExtendedDto : ProductBaseDto
+{
+  public int Id { get; set; }
+
+  public required CategoryBasicDto Category { get; set; }
+
+  public required UnityOfMeasureBasicDto UnityOfMeasure { get; set; }
+}

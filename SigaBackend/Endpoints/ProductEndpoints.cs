@@ -9,14 +9,16 @@ public static class ProductEndpoints
   {
     var group = routes.MapGroup("/api/products");
 
-    group.MapPost("/", (ProductCreateDto dto, IProductService service) => service.CreateProductAsync(dto)).WithName("CreateProduct");
+    group.MapPost("/", (ProductCreateDto dto, IProductService service) => service.CreateProductAsync(dto)).WithName("CreateProduct").RequireAuthorization();
 
-    group.MapGet("/", (IProductService service) => service.GetProductsAsync()).WithName("GetProducts");
+    group.MapGet("/", ([AsParameters] PaginationParams queryParams, IProductService service) => service.GetProductsAsync(queryParams)).WithName("GetProducts").RequireAuthorization();
 
-    group.MapGet("/{Id}", (int Id, IProductService service) => service.GetProductByIdAsync(Id));
+    group.MapGet("/{id}", (int Id, IProductService service) => service.GetProductByIdAsync(Id)).WithName("GetProductById").RequireAuthorization();
 
-    group.MapPut("/{Id}", (int Id, ProductBasicDto dto, IProductService service) => service.UpdateProductAsync(Id, dto));
+    group.MapGet("/lookup", (IProductService service) => service.GetProductsLookupAsync()).WithName("GetProductsLookup").RequireAuthorization();
 
-    group.MapDelete("/{Id}", (int Id, IProductService service) => service.DeleteProductAsync(Id));
+    group.MapPut("/{id}", (int Id, ProductBasicDto dto, IProductService service) => service.UpdateProductAsync(Id, dto)).WithName("UpdateProduct").RequireAuthorization();
+
+    group.MapDelete("/{id}", (int Id, IProductService service) => service.DeleteProductAsync(Id)).WithName("DeleteProduct").RequireAuthorization();
   }
 }

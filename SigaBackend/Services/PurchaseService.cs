@@ -1,8 +1,10 @@
 using System.Security.Claims;
+using Mapster;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using SigaBackend.Data;
 using SigaBackend.DTOs;
+using SigaBackend.Enums;
 using SigaBackend.Models;
 
 namespace SigaBackend.Services;
@@ -10,8 +12,13 @@ namespace SigaBackend.Services;
 interface IPurchaseService
 {
   Task<Results<Created<PurchaseBasicDto>, BadRequest<string>, UnauthorizedHttpResult>> CreatePurchaseAsync(PurchaseCreateDto dto, ClaimsPrincipal claims);
-  Task<Results<Ok<List<PurchaseBasicDto>>, NotFound>> GetPurchasesAsync();
-  Task<Results<Ok<PurchaseExtendedDto>, NotFound>> GetPurchaseByIdAsync(int Id);
+
+  Task<Ok<PagedList<PurchaseBasicDto>>> GetPurchasesAsync(PaginationParams queryParams);
+
+  Task<Results<Ok<PurchaseExtendedDto>, NotFound<string>>> GetPurchaseByIdAsync(int Id);
+
+  Task<Ok<PagedList<LotBasicDto>>> GetLotsByPurchaseAsync(int Id, PaginationParams queryParams);
+
   Task<Results<Ok<int>, BadRequest<string>>> CancelPurchaseAsync(int Id);
 }
 
@@ -23,10 +30,8 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
   {
     var userIdString = claims.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    if (!int.TryParse(userIdString, out int userId))
-    {
-      return TypedResults.Unauthorized();
-    }
+    if (!int.TryParse(userIdString, out int userId)) return TypedResults.Unauthorized();
+
 
     using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -60,7 +65,7 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
           UnitCost = pi.UnitCost,
           InitialQuantity = pi.Quantity,
           AvailableQuantity = pi.Quantity,
-          PurchaseId = purchase.PurchaseId
+          PurchaseId = purchase.Id
         };
 
         lots.Add(lot);
@@ -71,23 +76,19 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
 
       foreach (var lot in lots)
       {
-        lot.LotCode = $"{dateStr}-{lot.ProductId}-{lot.LotId}";
+        lot.LotCode = $"{dateStr}-{lot.ProductId}-{lot.Id}";
       }
 
       await _context.SaveChangesAsync();
       await transaction.CommitAsync();
 
-      var result = new PurchaseBasicDto(
-        purchase.PurchaseId,
-        purchase.ReferenceInvoice,
-        purchase.OperationDate,
-        purchase.TotalAmount,
-        purchase.Status,
-        purchase.SupplierId,
-        purchase.UserId
-      );
+      var result = purchase.Adapt<PurchaseBasicDto>();
 
-      return TypedResults.Created($"/api/purchases/{purchase.PurchaseId}", result);
+      return TypedResults.Created($"/api/purchases/{result.Id}", result);
+    }
+    catch (DbUpdateConcurrencyException)
+    {
+      return TypedResults.BadRequest("The inventory was modified during the transaction");
     }
     catch (Exception ex)
     {
@@ -95,75 +96,87 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
     }
   }
 
-  public async Task<Results<Ok<List<PurchaseBasicDto>>, NotFound>> GetPurchasesAsync()
+  public async Task<Ok<PagedList<PurchaseBasicDto>>> GetPurchasesAsync(PaginationParams queryParams)
   {
-    var purchases = await _context.Purchases
-      .Select(p => new PurchaseBasicDto(
-        p.PurchaseId,
-        p.ReferenceInvoice,
-        p.OperationDate,
-        p.TotalAmount,
-        p.Status,
-        p.SupplierId,
-        p.UserId
-      ))
+    var query = _context.Purchases
+      .AsNoTracking();
+
+    if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+      query = query.Where(p => p.ReferenceInvoice.Contains(queryParams.SearchTerm));
+
+    var totalCount = await query.CountAsync();
+    var page = queryParams.PageNumber < 1 ? 1 : queryParams.PageNumber;
+    var skip = (page - 1) * queryParams.PageSize;
+
+    var purchases = await query
+      .OrderBy(p => p.OperationDate)
+      .Skip(Math.Max(0, skip))
+      .Take(queryParams.PageSize)
+      .ProjectToType<PurchaseBasicDto>()
       .ToListAsync();
 
-    return TypedResults.Ok(purchases);
+    var pagedResults = new PagedList<PurchaseBasicDto>(
+      purchases,
+      totalCount,
+      queryParams.PageNumber,
+      queryParams.PageSize
+    );
+
+    return TypedResults.Ok(pagedResults);
   }
 
-  public async Task<Results<Ok<PurchaseExtendedDto>, NotFound>> GetPurchaseByIdAsync(int Id)
+  public async Task<Results<Ok<PurchaseExtendedDto>, NotFound<string>>> GetPurchaseByIdAsync(int Id)
   {
     var purchase = await _context.Purchases
-      .Where(p => p.PurchaseId == Id)
-      .Select(p => new PurchaseExtendedDto(
-        p.PurchaseId,
-        p.ReferenceInvoice,
-        p.OperationDate,
-        p.TotalAmount,
-        p.Status,
-        p.SupplierId,
-        p.UserId,
-        new SupplierBasicDto(
-          p.Supplier.SupplierId,
-          p.Supplier.Name,
-          p.Supplier.TaxId,
-          p.Supplier.ContactInfo
-        ),
-        new UserBasicDto(
-          p.User.Id,
-          p.User.Email,
-          p.User.FullName
-        ),
-        p.Lots.Select(l => new LotBasicDto(
-          l.LotId,
-          l.LotCode,
-          l.EntryDate,
-          l.UnitCost,
-          l.AvailableQuantity,
-          l.ProductId,
-          l.PurchaseId,
-          new ProductBasicDto(
-            l.Product.ProductId,
-            l.Product.Name,
-            l.Product.SKU,
-            l.Product.Description,
-            l.Product.BasePrice,
-            l.Product.CategoryId,
-            l.Product.UnityOfMeasureId
-          )
-        ))
-        .ToList()
-      ))
-      .FirstAsync();
+      .AsNoTracking()
+      .Where(p => p.Id == Id)
+      .ProjectToType<PurchaseExtendedDto>()
+      .FirstOrDefaultAsync();
+
+    if (purchase is null) return TypedResults.NotFound("The purchase was not found");
 
     return TypedResults.Ok(purchase);
+  }
+
+  public async Task<Ok<PagedList<LotBasicDto>>> GetLotsByPurchaseAsync(int Id, PaginationParams queryParams)
+  {
+    var query = _context.Lots
+      .AsNoTracking()
+      .Where((l) => l.PurchaseId == Id);
+
+    if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+      query = query.Where(p => p.LotCode.Contains(queryParams.SearchTerm));
+
+    var totalCount = await query.CountAsync();
+    var page = queryParams.PageNumber < 1 ? 1 : queryParams.PageNumber;
+    var skip = (page - 1) * queryParams.PageSize;
+
+    var lots = await query
+      .OrderBy(l => l.EntryDate)
+      .Skip(Math.Max(0, skip))
+      .Take(queryParams.PageSize)
+      .ProjectToType<LotBasicDto>()
+      .ToListAsync();
+
+    var pagedResults = new PagedList<LotBasicDto>(
+     lots,
+     totalCount,
+     queryParams.PageNumber,
+     queryParams.PageSize
+   );
+
+    return TypedResults.Ok(pagedResults);
   }
 
   public async Task<Results<Ok<int>, BadRequest<string>>> CancelPurchaseAsync(int Id)
   {
 
-    var purchase = await _context.Purchases.Where(p => p.PurchaseId == Id).FirstAsync();
+    var purchase = await _context.Purchases
+      .Where(p => p.Id == Id)
+      .FirstOrDefaultAsync();
+
+    if (purchase is null) return TypedResults.BadRequest("The purchase was not found");
+
     var lots = await _context.Lots
       .Where(l => l.PurchaseId == Id)
       .ToListAsync();

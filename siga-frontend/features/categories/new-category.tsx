@@ -1,0 +1,49 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Form, FormInput, FormTextArea } from "@/components/ui/form";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  createCategoryMutation,
+  getCategoriesOptions,
+} from "@/lib/client/@tanstack/react-query.gen";
+import { zCategoryCreateDto } from "@/lib/client/zod.gen";
+import { initialQueryParams } from "@/lib/constants";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+export function NewCategory() {
+  const queryClient = useQueryClient();
+  const { control, handleSubmit, reset } = useForm({
+    resolver: zodResolver(zCategoryCreateDto),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  const { mutate, isPending } = useMutation({
+    ...createCategoryMutation(),
+    onSuccess: () => {
+      reset();
+      queryClient.invalidateQueries(
+        getCategoriesOptions({ query: initialQueryParams })
+      );
+      toast.success("Categoría creada");
+    },
+    onError: () => toast.error("Ocurrió un error al crear la categoría"),
+  });
+
+  return (
+    <Form onSubmit={handleSubmit((data) => mutate({ body: data }))}>
+      <FormInput name="name" control={control} label="Nombre" isRequired />
+      <FormTextArea name="description" control={control} label="Descripción" />
+
+      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+        {isPending ? <Spinner /> : "Guardar"}
+      </Button>
+    </Form>
+  );
+}

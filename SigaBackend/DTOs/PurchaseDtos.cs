@@ -1,29 +1,60 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using SigaBackend.Models;
+using SigaBackend.Enums;
 
 namespace SigaBackend.DTOs;
 
+public abstract record PurchaseBaseDto
+{
+  public required int Id { get; set; }
+
+  [MaxLength(50), MinLength(1)]
+  public required string ReferenceInvoice { get; set; }
+
+  [Range(0.01, (double)decimal.MaxValue)]
+  public required decimal TotalAmount { get; set; }
+
+  public required DateTimeOffset OperationDate { get; set; }
+
+  public required Status Status { get; set; }
+
+  public required int SupplierId { get; set; }
+
+  public required int UserId { get; set; }
+}
+
 public record PurchaseCreateDto
 {
-  private string referenceInvoice = string.Empty;
-  [MaxLength(50)]
-  [MinLength(1)]
-  public required string ReferenceInvoice { get => referenceInvoice; set => referenceInvoice = value.Trim(); }
+  [MaxLength(50), MinLength(1)]
+  public required string ReferenceInvoice { get; set; }
+
   public required DateTimeOffset OperationDate { get; set; }
+
   public required int SupplierId { get; set; }
+
   public required List<PurchaseItemCreateDto> PurchaseItems { get; set; }
 }
 
-public record PurchaseItemCreateDto
+public record PurchaseBasicDto : PurchaseBaseDto;
+
+public record PurchaseExtendedDto : PurchaseBaseDto
+{
+  public required SupplierBasicDto Supplier { get; set; }
+
+  public required UserBasicDto User { get; set; }
+}
+
+public abstract record PurchaseItemBaseDto
 {
   public required int ProductId { get; set; }
+
+  [Range(0.0001, (double)decimal.MaxValue)]
   [Column(TypeName = "decimal(18,4)")]
   public required decimal Quantity { get; set; }
+
+  [Range(0.00, (double)decimal.MaxValue)]
   [Column(TypeName = "decimal(18,2)")]
   public required decimal UnitCost { get; set; }
 }
 
-public record PurchaseBasicDto(int Id, string ReferenceInvoice, DateTimeOffset OperationDate, decimal TotalAmount, Status Status, int SupplierId, int UserId);
-
-public record PurchaseExtendedDto(int Id, string ReferenceInvoice, DateTimeOffset OperationDate, decimal TotalAmount, Status Status, int SupplierId, int UserId, SupplierBasicDto Supplier, UserBasicDto User, List<LotBasicDto> Lots);
+public record PurchaseItemCreateDto : PurchaseItemBaseDto;

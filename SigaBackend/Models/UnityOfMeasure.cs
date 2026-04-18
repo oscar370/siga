@@ -4,14 +4,12 @@ namespace SigaBackend.Models;
 
 public class UnityOfMeasure
 {
-  public int UnityOfMeasureId { get; set; }
+  public int Id { get; set; }
 
-  [MaxLength(50)]
-  [MinLength(1)]
+  [MaxLength(50), MinLength(1)]
   public required string Name { get; set; }
 
-  [MaxLength(10)]
-  [MinLength(1)]
+  [MaxLength(10), MinLength(1)]
   public required string Abbreviation { get; set; }
 
   // [1:N]
