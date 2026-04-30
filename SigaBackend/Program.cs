@@ -118,4 +118,8 @@ app.MapLotEndpoints();
 app.MapSaleEndpoints();
 app.MapDashboardEndpoints();
 
+app.MapGet("/api/health", () => TypedResults.Ok(new { status = "Alive", time = DateTimeOffset.UtcNow }))
+   .WithName("HealthCheck")
+   .AllowAnonymous();
+
 app.Run();
