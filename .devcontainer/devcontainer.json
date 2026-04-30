@@ -1,24 +1,13 @@
 {
-  "name": "C# (.NET) & MS SQL & PNPM",
+  "name": "C# (.NET) and PostgreSQL",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
   "customizations": {
     "vscode": {
-      "settings": {
-        "mssql.connections": [
-          {
-            "server": "localhost,1433",
-            "database": "",
-            "authenticationType": "SqlLogin",
-            "user": "sa",
-            "password": "P@ssw0rd",
-            "emptyPasswordInput": false,
-            "savePassword": false,
-            "profileName": "mssql-container"
-          }
-        ]
-      },
       "extensions": [
         "ms-dotnettools.csharp",
         "ms-mssql.mssql",
@@ -31,11 +20,8 @@
       ]
     }
   },
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {}
-  },
+  "forwardPorts": [5432],
   "mounts": ["source=pnpm-store,target=/pnpm-store,type=volume"],
-  // postCreateCommand.sh parameters: $1=SA password, $2=dacpac path, $3=sql script(s) path
   "postCreateCommand": "chmod +x .devcontainer/post-install.sh && .devcontainer/post-install.sh",
   "remoteUser": "vscode"
 }

@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-chmod +x ./.devcontainer/mssql/postCreateCommand.sh
-./.devcontainer/mssql/postCreateCommand.sh 'P@ssw0rd' './bin/Debug/' './.devcontainer/mssql/'
-
 sudo chown -R $(whoami) /pnpm-store
 pnpm config set store-dir /pnpm-store
 
