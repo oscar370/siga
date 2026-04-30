@@ -6,7 +6,7 @@
   "scripts": {
     "openapi-ts": "openapi-ts -f ./config/openapi-ts.config.ts",
     "dev": "next dev --turbopack",
-    "build": "pnpm openapi-ts && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
