@@ -1,12 +1,7 @@
 import { defineConfig } from "@hey-api/openapi-ts";
-import { config } from "dotenv";
-
-config({ path: ".env.local" });
-
-const API_SCHEMA_URL = process.env.API_SCHEMA_URL ?? "";
 
 export default defineConfig({
-  input: API_SCHEMA_URL,
+  input: "http://127.0.0.1:5062/openapi/v1.json",
   output: {
     path: "lib/client",
     postProcess: ["prettier"],
