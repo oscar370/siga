@@ -94,7 +94,13 @@ if (app.Environment.IsDevelopment())
 // Identity seed
 using (var scope = app.Services.CreateScope())
 {
-    await DbSeeder.SeedRolesAndAdminAsync(scope.ServiceProvider);
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<SigaDbContext>();
+
+    await context.Database.MigrateAsync();
+
+    await DbSeeder.SeedRolesAndAdminAsync(services);
 }
 
 app.UseHttpsRedirection();
