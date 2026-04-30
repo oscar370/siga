@@ -12,7 +12,7 @@ using SigaBackend.Data;
 namespace SigaBackend.Migrations
 {
     [DbContext(typeof(SigaDbContext))]
-    [Migration("20260417151445_InitialCreate")]
+    [Migration("20260430030147_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -300,7 +300,7 @@ namespace SigaBackend.Migrations
                     b.Property<int>("SupplierId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("TotalCost")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
@@ -334,7 +334,7 @@ namespace SigaBackend.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("TotalRevenue")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
