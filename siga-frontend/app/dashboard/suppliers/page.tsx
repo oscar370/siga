@@ -2,7 +2,6 @@ import { PageContainer } from "@/components/ui/page-container";
 import { SuppliersTable } from "@/features/suppliers/suppliers-table";
 import { getSuppliersOptions } from "@/lib/client/@tanstack/react-query.gen";
 import { initialQueryParams } from "@/lib/constants";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -13,7 +12,7 @@ export default async function SuppliersPage() {
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery(
-    getSuppliersOptions({ client: serverClient, query: initialQueryParams })
+    getSuppliersOptions({ query: initialQueryParams })
   );
 
   return (

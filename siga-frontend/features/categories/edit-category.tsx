@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorContent } from "@/components/ui/error-content";
 import { Form, FormInput, FormTextArea } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
+import { useCanMutate } from "@/hooks/use-can-mutate";
 import {
   getCategoriesOptions,
   getCategoryByIdOptions,
@@ -25,6 +26,7 @@ type EditCategoryProps = {
 };
 
 export function EditCategory({ id }: EditCategoryProps) {
+  const canMutate = useCanMutate();
   const queryClient = useQueryClient();
   const { data, isError } = useSuspenseQuery(
     getCategoryByIdOptions({ path: { id } })
@@ -56,9 +58,11 @@ export function EditCategory({ id }: EditCategoryProps) {
 
       <FormTextArea name="description" control={control} label="Descripción" />
 
-      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? <Spinner /> : "Actualizar"}
-      </Button>
+      {canMutate && (
+        <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+          {isPending ? <Spinner /> : "Actualizar"}
+        </Button>
+      )}
     </Form>
   );
 }

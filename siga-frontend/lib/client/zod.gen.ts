@@ -47,6 +47,21 @@ export const zCategoryCreateDto = z.object({
   description: z.string().max(200).nullish(),
 });
 
+export const zFinancialSummaryDto = z.object({
+  totalRevenue: z.union([
+    z.number().gte(0.01),
+    z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/),
+  ]),
+  totalCostOfGoodsSold: z.union([
+    z.number().gte(0.01),
+    z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/),
+  ]),
+  grossProfit: z.union([
+    z.number().gte(0.01),
+    z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/),
+  ]),
+});
+
 export const zForgotPasswordRequest = z.object({
   email: z.string(),
 });
@@ -576,7 +591,7 @@ export const zPurchaseBasicDto = z.object({
     z.string().regex(/^-?(?:0|[1-9]\d*)$/),
   ]),
   referenceInvoice: z.string().min(1).max(50),
-  totalAmount: z.union([
+  totalCost: z.union([
     z.number().gte(0.01),
     z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/),
   ]),
@@ -779,6 +794,29 @@ export const zSupplierCreateDto = z.object({
   name: z.string().min(1).max(100),
   taxId: z.string().min(1).max(20),
   contactInfo: z.string().nullish(),
+});
+
+export const zTransactionType = z.int();
+
+export const zRecentTransactionDto = z.object({
+  transactionId: z.union([
+    z
+      .int()
+      .min(-2147483648, {
+        error: "Invalid value: Expected int32 to be >= -2147483648",
+      })
+      .max(2147483647, {
+        error: "Invalid value: Expected int32 to be <= 2147483647",
+      }),
+    z.string().regex(/^-?(?:0|[1-9]\d*)$/),
+  ]),
+  type: zTransactionType,
+  reference: z.string(),
+  operationDate: z.iso.datetime(),
+  totalAmount: z.union([
+    z.number(),
+    z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/),
+  ]),
 });
 
 export const zTwoFactorRequest = z.object({
@@ -1010,7 +1048,7 @@ export const zPurchaseExtendedDto = z.object({
     z.string().regex(/^-?(?:0|[1-9]\d*)$/),
   ]),
   referenceInvoice: z.string().min(1).max(50),
-  totalAmount: z.union([
+  totalCost: z.union([
     z.number().gte(0.01),
     z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/),
   ]),
@@ -1053,7 +1091,7 @@ export const zSaleBasicDto = z.object({
     z.string().regex(/^-?(?:0|[1-9]\d*)$/),
   ]),
   referenceInvoice: z.string().min(1).max(50),
-  totalAmount: z.union([
+  totalRevenue: z.union([
     z.number().gte(0.01),
     z.string().regex(/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/),
   ]),
@@ -1306,6 +1344,51 @@ export const zUpdateProductPath = z.object({
  * OK
  */
 export const zUpdateProductResponse = zProductBasicDto;
+
+export const zGetLotsByProductPath = z.object({
+  id: z.union([
+    z
+      .int()
+      .min(-2147483648, {
+        error: "Invalid value: Expected int32 to be >= -2147483648",
+      })
+      .max(2147483647, {
+        error: "Invalid value: Expected int32 to be <= 2147483647",
+      }),
+    z.string().regex(/^-?(?:0|[1-9]\d*)$/),
+  ]),
+});
+
+export const zGetLotsByProductQuery = z.object({
+  PageNumber: z.union([
+    z
+      .int()
+      .min(-2147483648, {
+        error: "Invalid value: Expected int32 to be >= -2147483648",
+      })
+      .max(2147483647, {
+        error: "Invalid value: Expected int32 to be <= 2147483647",
+      }),
+    z.string().regex(/^-?(?:0|[1-9]\d*)$/),
+  ]),
+  PageSize: z.union([
+    z
+      .int()
+      .min(-2147483648, {
+        error: "Invalid value: Expected int32 to be >= -2147483648",
+      })
+      .max(2147483647, {
+        error: "Invalid value: Expected int32 to be <= 2147483647",
+      }),
+    z.string().regex(/^-?(?:0|[1-9]\d*)$/),
+  ]),
+  SearchTerm: z.string().optional(),
+});
+
+/**
+ * OK
+ */
+export const zGetLotsByProductResponse = zPagedListOfLotBasicDto;
 
 /**
  * OK
@@ -2094,3 +2177,35 @@ export const zGetSaleDetailsBySaleQuery = z.object({
  * OK
  */
 export const zGetSaleDetailsBySaleResponse = zPagedListOfSaleDetailsBasicDto;
+
+export const zGetFinancialSummaryQuery = z.object({
+  StartDate: z.iso.datetime(),
+  EndDate: z.iso.datetime(),
+});
+
+/**
+ * OK
+ */
+export const zGetFinancialSummaryResponse = zFinancialSummaryDto;
+
+export const zGetRecentTransactionsQuery = z.object({
+  limit: z
+    .union([
+      z
+        .int()
+        .min(-2147483648, {
+          error: "Invalid value: Expected int32 to be >= -2147483648",
+        })
+        .max(2147483647, {
+          error: "Invalid value: Expected int32 to be <= 2147483647",
+        }),
+      z.string().regex(/^-?(?:0|[1-9]\d*)$/),
+    ])
+    .optional()
+    .default(10),
+});
+
+/**
+ * OK
+ */
+export const zGetRecentTransactionsResponse = z.array(zRecentTransactionDto);

@@ -18,6 +18,8 @@ interface IProductService
 
   Task<Results<Ok<ProductExtendedDto>, NotFound<string>>> GetProductByIdAsync(int Id);
 
+  Task<Ok<PagedList<LotBasicDto>>> GetLotsByProductAsync(int Id, PaginationParams queryParams);
+
   Task<Ok<List<LookupDto>>> GetProductsLookupAsync();
 
   Task<Results<Ok<ProductBasicDto>, BadRequest<string>>> UpdateProductAsync(int Id, ProductBasicDto dto);
@@ -59,7 +61,7 @@ public class ProductService(SigaDbContext context) : IProductService
     var skip = (page - 1) * queryParams.PageSize;
 
     var products = await query
-      .OrderBy(c => c.Name)
+      .OrderByDescending(c => c.Name)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<ProductExtendedDto>()
@@ -88,12 +90,42 @@ public class ProductService(SigaDbContext context) : IProductService
     return TypedResults.Ok(product);
   }
 
+  public async Task<Ok<PagedList<LotBasicDto>>> GetLotsByProductAsync(int Id, PaginationParams queryParams)
+  {
+    var query = _context.Lots
+      .AsNoTracking()
+      .Where((l) => l.ProductId == Id);
+
+    if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+      query = query.Where(p => p.LotCode.Contains(queryParams.SearchTerm));
+
+    var totalCount = await query.CountAsync();
+    var page = queryParams.PageNumber < 1 ? 1 : queryParams.PageNumber;
+    var skip = (page - 1) * queryParams.PageSize;
+
+    var lots = await query
+      .OrderByDescending(l => l.EntryDate)
+      .Skip(Math.Max(0, skip))
+      .Take(queryParams.PageSize)
+      .ProjectToType<LotBasicDto>()
+      .ToListAsync();
+
+    var pagedResults = new PagedList<LotBasicDto>(
+     lots,
+     totalCount,
+     queryParams.PageNumber,
+     queryParams.PageSize
+   );
+
+    return TypedResults.Ok(pagedResults);
+  }
+
   public async Task<Ok<List<LookupDto>>> GetProductsLookupAsync()
   {
     var products = await _context.Products
       .AsNoTracking()
       .Where(p => p.IsActive && p.DeletedAt == null)
-      .OrderBy(p => p.Name)
+      .OrderByDescending(p => p.Name)
       .ProjectToType<LookupDto>()
       .ToListAsync();
 

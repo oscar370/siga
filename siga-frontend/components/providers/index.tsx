@@ -2,6 +2,7 @@
 
 import "@/lib/zod";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "../ui/tooltip";
@@ -26,6 +27,7 @@ export function Providers({ children }: React.PropsWithChildren) {
       <ThemeProvider attribute="class" enableSystem>
         <TooltipProvider>{children}</TooltipProvider>
         <Toaster theme="system" />
+        <ReactQueryDevtools initialIsOpen={false} />
       </ThemeProvider>
     </QueryClientProvider>
   );

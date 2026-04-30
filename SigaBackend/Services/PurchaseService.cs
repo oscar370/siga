@@ -45,7 +45,7 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
       {
         ReferenceInvoice = dto.ReferenceInvoice,
         OperationDate = operationDateUtc,
-        TotalAmount = totalAmount,
+        TotalCost = totalAmount,
         Status = Status.Completed,
         SupplierId = dto.SupplierId,
         UserId = userId
@@ -109,7 +109,7 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
     var skip = (page - 1) * queryParams.PageSize;
 
     var purchases = await query
-      .OrderBy(p => p.OperationDate)
+      .OrderByDescending(p => p.OperationDate)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<PurchaseBasicDto>()
@@ -152,7 +152,7 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
     var skip = (page - 1) * queryParams.PageSize;
 
     var lots = await query
-      .OrderBy(l => l.EntryDate)
+      .OrderByDescending(l => l.EntryDate)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<LotBasicDto>()

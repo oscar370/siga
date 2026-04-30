@@ -6,7 +6,6 @@ import {
   getProductsByCategoryOptions,
 } from "@/lib/client/@tanstack/react-query.gen";
 import { initialQueryParams } from "@/lib/constants";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -22,12 +21,9 @@ export default async function CategoryDetailsPage({ params }: Props) {
   const queryClient = new QueryClient();
 
   await Promise.all([
-    await queryClient.prefetchQuery(
-      getCategoryByIdOptions({ client: serverClient, path: { id } })
-    ),
+    await queryClient.prefetchQuery(getCategoryByIdOptions({ path: { id } })),
     await queryClient.prefetchQuery(
       getProductsByCategoryOptions({
-        client: serverClient,
         path: { id },
         query: initialQueryParams,
       })

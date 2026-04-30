@@ -22,6 +22,12 @@ export type CategoryCreateDto = {
   description?: null | string;
 };
 
+export type FinancialSummaryDto = {
+  totalRevenue: number | string;
+  totalCostOfGoodsSold: number | string;
+  grossProfit: number | string;
+};
+
 export type ForgotPasswordRequest = {
   email: string;
 };
@@ -207,7 +213,7 @@ export type ProductExtendedDto = {
 export type PurchaseBasicDto = {
   id: number | string;
   referenceInvoice: string;
-  totalAmount: number | string;
+  totalCost: number | string;
   operationDate: string;
   status: Status;
   supplierId: number | string;
@@ -226,7 +232,7 @@ export type PurchaseExtendedDto = {
   user: UserBasicDto;
   id: number | string;
   referenceInvoice: string;
-  totalAmount: number | string;
+  totalCost: number | string;
   operationDate: string;
   status: Status;
   supplierId: number | string;
@@ -237,6 +243,14 @@ export type PurchaseItemCreateDto = {
   productId: number | string;
   quantity: number | string;
   unitCost: number | string;
+};
+
+export type RecentTransactionDto = {
+  transactionId: number | string;
+  type: TransactionType;
+  reference: string;
+  operationDate: string;
+  totalAmount: number | string;
 };
 
 export type RefreshRequest = {
@@ -261,7 +275,7 @@ export type ResetPasswordRequest = {
 export type SaleBasicDto = {
   id: number | string;
   referenceInvoice: string;
-  totalAmount: number | string;
+  totalRevenue: number | string;
   operationDate: string;
   status: Status;
   userId: number | string;
@@ -302,6 +316,8 @@ export type SupplierCreateDto = {
   taxId: string;
   contactInfo?: null | string;
 };
+
+export type TransactionType = number;
 
 export type TwoFactorRequest = {
   enable?: null | boolean;
@@ -731,6 +747,29 @@ export type UpdateProductResponses = {
 
 export type UpdateProductResponse =
   UpdateProductResponses[keyof UpdateProductResponses];
+
+export type GetLotsByProductData = {
+  body?: never;
+  path: {
+    id: number | string;
+  };
+  query: {
+    PageNumber: number | string;
+    PageSize: number | string;
+    SearchTerm?: string;
+  };
+  url: "/api/products/{id}/lots";
+};
+
+export type GetLotsByProductResponses = {
+  /**
+   * OK
+   */
+  200: PagedListOfLotBasicDto;
+};
+
+export type GetLotsByProductResponse =
+  GetLotsByProductResponses[keyof GetLotsByProductResponses];
 
 export type GetProductsLookupData = {
   body?: never;
@@ -1576,3 +1615,42 @@ export type GetSaleDetailsBySaleResponses = {
 
 export type GetSaleDetailsBySaleResponse =
   GetSaleDetailsBySaleResponses[keyof GetSaleDetailsBySaleResponses];
+
+export type GetFinancialSummaryData = {
+  body?: never;
+  path?: never;
+  query: {
+    StartDate: string;
+    EndDate: string;
+  };
+  url: "/api/dashboard/summary";
+};
+
+export type GetFinancialSummaryResponses = {
+  /**
+   * OK
+   */
+  200: FinancialSummaryDto;
+};
+
+export type GetFinancialSummaryResponse =
+  GetFinancialSummaryResponses[keyof GetFinancialSummaryResponses];
+
+export type GetRecentTransactionsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number | string;
+  };
+  url: "/api/dashboard/recent-transactions";
+};
+
+export type GetRecentTransactionsResponses = {
+  /**
+   * OK
+   */
+  200: Array<RecentTransactionDto>;
+};
+
+export type GetRecentTransactionsResponse =
+  GetRecentTransactionsResponses[keyof GetRecentTransactionsResponses];

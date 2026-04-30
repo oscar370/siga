@@ -1,7 +1,6 @@
 import { PageContainer } from "@/components/ui/page-container";
 import { EditSupplier } from "@/features/suppliers/edit-supplier";
 import { getSupplierByIdOptions } from "@/lib/client/@tanstack/react-query.gen";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -16,9 +15,7 @@ export default async function EditSupplierPage({ params }: Props) {
   const { id } = await params;
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery(
-    getSupplierByIdOptions({ client: serverClient, path: { id } })
-  );
+  await queryClient.prefetchQuery(getSupplierByIdOptions({ path: { id } }));
 
   return (
     <PageContainer title="Editar proveedor">

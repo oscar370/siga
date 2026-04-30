@@ -1,7 +1,6 @@
 import { PageContainer } from "@/components/ui/page-container";
 import { EditUnityOfMeasure } from "@/features/units-of-measure/edit-unity-of-measure";
 import { getUnityOfMeasureByIdOptions } from "@/lib/client/@tanstack/react-query.gen";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -17,7 +16,7 @@ export default async function EditUnityOfMeasurePage({ params }: Props) {
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery(
-    getUnityOfMeasureByIdOptions({ client: serverClient, path: { id } })
+    getUnityOfMeasureByIdOptions({ path: { id } })
   );
 
   return (

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorContent } from "@/components/ui/error-content";
 import { Form, FormInput } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
+import { useCanMutate } from "@/hooks/use-can-mutate";
 import {
   getSupplierByIdOptions,
   getSuppliersOptions,
@@ -25,6 +26,7 @@ type EditSupplierProps = {
 };
 
 export function EditSupplier({ id }: EditSupplierProps) {
+  const canMutate = useCanMutate();
   const queryClient = useQueryClient();
   const { data, isError } = useSuspenseQuery(
     getSupplierByIdOptions({ path: { id } })
@@ -62,9 +64,11 @@ export function EditSupplier({ id }: EditSupplierProps) {
         label="Información de contacto"
       />
 
-      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? <Spinner /> : "Actualizar"}
-      </Button>
+      {canMutate && (
+        <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+          {isPending ? <Spinner /> : "Actualizar"}
+        </Button>
+      )}
     </Form>
   );
 }

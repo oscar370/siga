@@ -17,7 +17,7 @@ import {
   getUnitsOfMeasureLookupOptions,
   updateProductMutation,
 } from "@/lib/client/@tanstack/react-query.gen";
-import { zProductBasicDto } from "@/lib/client/zod.gen";
+import { zProductExtendedDto } from "@/lib/client/zod.gen";
 import { initialQueryParams } from "@/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -46,7 +46,7 @@ export function EditProduct({ id }: EditProductProps) {
     useSuspenseQuery(getUnitsOfMeasureLookupOptions());
 
   const { control, handleSubmit, reset } = useForm({
-    resolver: zodResolver(zProductBasicDto),
+    resolver: zodResolver(zProductExtendedDto),
     defaultValues: data,
   });
 

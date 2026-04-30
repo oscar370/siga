@@ -45,7 +45,7 @@ public class SaleService(SigaDbContext context) : ISaleService
       var sale = new Sale
       {
         OperationDate = operationDateUtc,
-        TotalAmount = totalAmount,
+        TotalRevenue = totalAmount,
         Status = Status.Completed,
         UserId = userId,
         ReferenceInvoice = $"TKT-{operationDateUtc:yyyyMMdd}-{Guid.NewGuid().ToString()[..4].ToUpper()}"
@@ -71,7 +71,7 @@ public class SaleService(SigaDbContext context) : ISaleService
 
         var availableLots = await _context.Lots
             .Where(l => l.ProductId == item.ProductId && l.AvailableQuantity > 0)
-            .OrderBy(l => l.EntryDate)
+            .OrderByDescending(l => l.EntryDate)
             .ToListAsync();
 
         foreach (var lot in availableLots)
@@ -133,7 +133,7 @@ public class SaleService(SigaDbContext context) : ISaleService
     var skip = (page - 1) * queryParams.PageSize;
 
     var sales = await query
-      .OrderBy(s => s.OperationDate)
+      .OrderByDescending(s => s.OperationDate)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<SaleBasicDto>()
@@ -176,7 +176,7 @@ public class SaleService(SigaDbContext context) : ISaleService
     var skip = (page - 1) * queryParams.PageSize;
 
     var products = await query
-      .OrderBy(sd => sd.Sale.OperationDate)
+      .OrderByDescending(sd => sd.Sale.OperationDate)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<SaleDetailsBasicDto>()

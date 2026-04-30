@@ -2,7 +2,6 @@ import { PageContainer } from "@/components/ui/page-container";
 import { UnitsOfMeasureTable } from "@/features/units-of-measure/units-of-measure-table";
 import { getUnitsOfMeasureOptions } from "@/lib/client/@tanstack/react-query.gen";
 import { initialQueryParams } from "@/lib/constants";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -14,7 +13,6 @@ export default async function UnitsOfMeasurePage() {
 
   await queryClient.prefetchQuery(
     getUnitsOfMeasureOptions({
-      client: serverClient,
       query: initialQueryParams,
     })
   );

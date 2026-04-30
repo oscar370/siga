@@ -27,8 +27,9 @@ const columns: ColumnDef<SaleBasicDto>[] = [
     cell: ({ row }) => <LocalDate date={row.original.operationDate} />,
   },
   {
-    accessorKey: "totalAmount",
-    header: "Cantidad",
+    accessorKey: "totalRevenue",
+    header: "Ganancias",
+    cell: ({ row }) => `$ ${row.original.totalRevenue}`,
   },
   {
     accessorKey: "status",

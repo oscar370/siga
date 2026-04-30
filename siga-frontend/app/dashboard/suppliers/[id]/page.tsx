@@ -6,7 +6,6 @@ import {
   getSupplierByIdOptions,
 } from "@/lib/client/@tanstack/react-query.gen";
 import { initialQueryParams } from "@/lib/constants";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -22,12 +21,9 @@ export default async function SupplierDetailsPage({ params }: Props) {
   const queryClient = new QueryClient();
 
   await Promise.all([
-    queryClient.prefetchQuery(
-      getSupplierByIdOptions({ client: serverClient, path: { id } })
-    ),
+    queryClient.prefetchQuery(getSupplierByIdOptions({ path: { id } })),
     queryClient.prefetchQuery(
       getPurchasesBySupplierOptions({
-        client: serverClient,
         path: { id },
         query: initialQueryParams,
       })

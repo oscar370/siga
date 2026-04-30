@@ -4,6 +4,7 @@ import { DataGroup, DataItem } from "@/components/ui/data-field";
 import { DataTable } from "@/components/ui/data-table";
 import { ErrorContent } from "@/components/ui/error-content";
 import { Link } from "@/components/ui/link";
+import { LocalDate } from "@/components/ui/local-date";
 import { useQueryParams } from "@/hooks/use-query-params";
 import { PurchaseBasicDto } from "@/lib/client";
 import {
@@ -27,14 +28,17 @@ const columns: ColumnDef<PurchaseBasicDto>[] = [
   {
     accessorKey: "operationDate",
     header: "Fecha de operación",
+    cell: ({ row }) => <LocalDate date={row.original.operationDate} />,
   },
   {
-    accessorKey: "totalAmount",
-    header: "Cantidad",
+    accessorKey: "totalCost",
+    header: "Costo",
+    cell: ({ row }) => `$ ${row.original.totalCost}`,
   },
   {
     accessorKey: "status",
     header: "Estado",
+    cell: ({ row }) => (row.original.status === 0 ? "Completada" : "Cancelada"),
   },
 ];
 

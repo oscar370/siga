@@ -13,10 +13,16 @@ export default defineConfig({
   },
   plugins: [
     "zod",
+    "@tanstack/react-query",
     {
       name: "@hey-api/client-next",
-      runtimeConfigPath: "lib/api-client.ts",
+      runtimeConfigPath: "../api-client",
     },
-    "@tanstack/react-query",
+    {
+      name: "@hey-api/sdk",
+      validator: {
+        request: "zod",
+      },
+    },
   ],
 });

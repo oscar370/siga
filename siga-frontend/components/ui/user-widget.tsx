@@ -1,19 +1,20 @@
-import { UserBasicDto } from "@/lib/client"
-import { LogOut } from "lucide-react"
-import { Button } from "./button"
+import { UserBasicDto } from "@/lib/client";
+import { LogOut } from "lucide-react";
+import { Button } from "./button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./dropdown-menu"
+} from "./dropdown-menu";
 
 type UserWidgetProps = {
-  user: UserBasicDto
-}
+  user: UserBasicDto;
+  onLogout: () => void;
+};
 
-export function UserWidget({ user }: UserWidgetProps) {
+export function UserWidget({ user, onLogout }: UserWidgetProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="px-1 text-sm">
@@ -23,13 +24,15 @@ export function UserWidget({ user }: UserWidgetProps) {
       <DropdownMenuContent>
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Button className="justify-start" variant="ghost">
-              <LogOut />
-              Cerrar sesión
-            </Button>
+            <form action={onLogout}>
+              <Button className="justify-start" variant="ghost">
+                <LogOut />
+                Cerrar sesión
+              </Button>
+            </form>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

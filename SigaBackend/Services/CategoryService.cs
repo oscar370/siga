@@ -54,7 +54,7 @@ public class CategoryService(SigaDbContext context) : ICategoryService
     var skip = (page - 1) * queryParams.PageSize;
 
     var categories = await query
-      .OrderBy(c => c.Name)
+      .OrderByDescending(c => c.Name)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<CategoryBasicDto>()
@@ -97,7 +97,7 @@ public class CategoryService(SigaDbContext context) : ICategoryService
     var skip = (page - 1) * queryParams.PageSize;
 
     var products = await query
-      .OrderBy(p => p.Name)
+      .OrderByDescending(p => p.Name)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<ProductBasicDto>()
@@ -118,7 +118,7 @@ public class CategoryService(SigaDbContext context) : ICategoryService
     var categories = await _context.Categories
       .AsNoTracking()
       .Where(c => c.IsActive && c.DeletedAt == null)
-      .OrderBy(c => c.Name)
+      .OrderByDescending(c => c.Name)
       .ProjectToType<LookupDto>()
       .ToListAsync();
 

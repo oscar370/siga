@@ -6,7 +6,6 @@ import {
   getUnityOfMeasureByIdOptions,
 } from "@/lib/client/@tanstack/react-query.gen";
 import { initialQueryParams } from "@/lib/constants";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -23,11 +22,10 @@ export default async function UnityOfMeasureDetailsPage({ params }: Props) {
 
   await Promise.all([
     await queryClient.prefetchQuery(
-      getUnityOfMeasureByIdOptions({ client: serverClient, path: { id } })
+      getUnityOfMeasureByIdOptions({ path: { id } })
     ),
     await queryClient.prefetchQuery(
       getProductsByUnityOfMeasureOptions({
-        client: serverClient,
         path: { id },
         query: initialQueryParams,
       })

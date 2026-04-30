@@ -297,7 +297,7 @@ namespace SigaBackend.Migrations
                     b.Property<int>("SupplierId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("TotalCost")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
@@ -331,7 +331,7 @@ namespace SigaBackend.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("TotalRevenue")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")

@@ -1,7 +1,6 @@
 import { PageContainer } from "@/components/ui/page-container";
 import { EditCategory } from "@/features/categories/edit-category";
 import { getCategoryByIdOptions } from "@/lib/client/@tanstack/react-query.gen";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -16,9 +15,7 @@ export default async function EditCategoryPage({ params }: Props) {
   const { id } = await params;
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery(
-    getCategoryByIdOptions({ client: serverClient, path: { id } })
-  );
+  await queryClient.prefetchQuery(getCategoryByIdOptions({ path: { id } }));
 
   return (
     <PageContainer title="Editar categoría">

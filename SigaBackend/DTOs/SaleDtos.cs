@@ -12,7 +12,7 @@ public abstract record SaleBaseDto
   public required string ReferenceInvoice { get; set; }
 
   [Range(0.01, (double)decimal.MaxValue)]
-  public required decimal TotalAmount { get; set; }
+  public required decimal TotalRevenue { get; set; }
 
   public required DateTime OperationDate { get; set; }
 

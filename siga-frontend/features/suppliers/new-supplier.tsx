@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Form, FormInput } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
+import { useCanMutate } from "@/hooks/use-can-mutate";
 import {
   createSupplierMutation,
   getSuppliersOptions,
@@ -15,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export function NewSupplier() {
+  const canMutate = useCanMutate();
   const queryClient = useQueryClient();
   const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(zSupplierCreateDto),
@@ -49,9 +51,11 @@ export function NewSupplier() {
         label="Información de contacto"
       />
 
-      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? <Spinner /> : "Guardar"}
-      </Button>
+      {canMutate && (
+        <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+          {isPending ? <Spinner /> : "Guardar"}
+        </Button>
+      )}
     </Form>
   );
 }

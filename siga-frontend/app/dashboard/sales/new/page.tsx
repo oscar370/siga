@@ -10,7 +10,7 @@ import {
 export default async function NewSalePage() {
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery(getProductsLookupOptions());
+  await queryClient.prefetchQuery(getProductsLookupOptions({}));
 
   return (
     <PageContainer title="Nueva venta">

@@ -14,16 +14,16 @@ export function LoginForm() {
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(zLoginRequest),
     defaultValues: {
-      email: "admin@correo.com",
-      password: "Admin123*!",
+      email: "auditor@correo.com",
+      password: "XAFj1C%M2w4^NF",
     },
   });
 
   const { mutate } = useMutation({
-    ...postApiAuthLoginMutation({ query: { useCookies: true } }),
-    onSuccess: () => {
-      router.replace("/dashboard");
-    },
+    ...postApiAuthLoginMutation({
+      query: { useCookies: true },
+    }),
+    onSuccess: () => router.replace("/dashboard"),
   });
 
   return (

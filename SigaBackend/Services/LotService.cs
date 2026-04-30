@@ -29,7 +29,7 @@ public class LotService(SigaDbContext context) : ILotService
     var skip = (page - 1) * queryParams.PageSize;
 
     var lots = await query
-      .OrderBy(l => l.EntryDate)
+      .OrderByDescending(l => l.EntryDate)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<LotBasicDto>()

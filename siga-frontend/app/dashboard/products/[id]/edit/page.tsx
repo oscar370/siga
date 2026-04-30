@@ -5,7 +5,6 @@ import {
   getProductByIdOptions,
   getUnitsOfMeasureLookupOptions,
 } from "@/lib/client/@tanstack/react-query.gen";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -21,15 +20,9 @@ export default async function EditProductsPage({ params }: Props) {
   const queryClient = new QueryClient();
 
   await Promise.all([
-    queryClient.prefetchQuery(
-      getCategoriesLookupOptions({ client: serverClient })
-    ),
-    queryClient.prefetchQuery(
-      getUnitsOfMeasureLookupOptions({ client: serverClient })
-    ),
-    queryClient.prefetchQuery(
-      getProductByIdOptions({ client: serverClient, path: { id } })
-    ),
+    queryClient.prefetchQuery(getCategoriesLookupOptions({})),
+    queryClient.prefetchQuery(getUnitsOfMeasureLookupOptions({})),
+    queryClient.prefetchQuery(getProductByIdOptions({ path: { id } })),
   ]);
 
   return (

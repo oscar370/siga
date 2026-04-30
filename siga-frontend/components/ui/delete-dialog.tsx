@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { useCanMutate } from "@/hooks/use-can-mutate";
 import { Trash } from "lucide-react";
 
 type DeleteDialogProps = {
@@ -25,6 +28,8 @@ export function DeleteDialog({
   isPending,
   onDelete,
 }: DeleteDialogProps) {
+  const canMutate = useCanMutate();
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -46,9 +51,11 @@ export function DeleteDialog({
               Cancelar
             </Button>
           </DialogClose>
-          <Button disabled={isPending} onClick={onDelete}>
-            {isPending ? <Spinner /> : "Confirmar"}
-          </Button>
+          {canMutate && (
+            <Button disabled={isPending} onClick={onDelete}>
+              {isPending ? <Spinner /> : "Confirmar"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

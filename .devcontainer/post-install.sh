@@ -1,9 +1,16 @@
-bash .devcontainer/mssql/postCreateCommand.sh 'P@ssw0rd' './bin/Debug/' './.devcontainer/mssql/' 
+#!/bin/bash
+set -e
 
-sudo chown vscode /pnpm-store && pnpm config set store-dir /pnpm-store
+chmod +x ./.devcontainer/mssql/postCreateCommand.sh
+./.devcontainer/mssql/postCreateCommand.sh 'P@ssw0rd' './bin/Debug/' './.devcontainer/mssql/'
 
-(cd siga-frontend && pnpm i)
+sudo chown -R $(whoami) /pnpm-store
+pnpm config set store-dir /pnpm-store
 
-dotnet tool install --global dotnet-ef
+(cd siga-frontend && pnpm install)
 
-(cd SigaBackend && dotnet restore)
+if ! dotnet tool list -g | grep -q "dotnet-ef"; then
+  dotnet tool install --global dotnet-ef
+fi
+
+(cd SigaBackend && dotnet restore && dotnet ef database update)

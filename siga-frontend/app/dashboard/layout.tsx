@@ -4,26 +4,35 @@ import {
   SidebarHeader,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { UserWidget } from "@/components/ui/user-widget";
-import { getUser } from "@/lib/client/sdk.gen";
-import { serverClient } from "@/lib/server-client";
+import { getUserOptions } from "@/lib/client/@tanstack/react-query.gen";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 import { redirect } from "next/navigation";
 import { SidebarContentApp } from "./sidebar-content";
+import { UserWidgetApp } from "./user-widget-app";
 
 type AppLayoutProps = {
   children: React.ReactNode;
 };
 
 export default async function AppLayout({ children }: AppLayoutProps) {
-  const user = await getUser({ client: serverClient }).catch(() => null);
+  const queryClient = new QueryClient();
+  const user = await queryClient
+    .ensureQueryData(getUserOptions())
+    .catch(() => null);
 
-  if (user?.error || !user?.data) redirect("/auth/login");
+  if (!user) redirect("/auth/login");
 
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <UserWidget user={user.data} />
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <UserWidgetApp />
+          </HydrationBoundary>
         </SidebarHeader>
 
         <SidebarContent>

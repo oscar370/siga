@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form";
 import { SelectGroup, SelectItem } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { useCanMutate } from "@/hooks/use-can-mutate";
 import {
   createProductMutation,
   getCategoriesLookupOptions,
@@ -29,6 +30,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export function NewProduct() {
+  const canMutate = useCanMutate();
   const queryClient = useQueryClient();
   const router = useRouter();
   const { control, handleSubmit, reset } = useForm({
@@ -119,9 +121,11 @@ export function NewProduct() {
 
       <FormTextArea name="description" control={control} label="Descripción" />
 
-      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? <Spinner /> : "Guardar"}
-      </Button>
+      {canMutate && (
+        <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+          {isPending ? <Spinner /> : "Guardar"}
+        </Button>
+      )}
     </Form>
   );
 }

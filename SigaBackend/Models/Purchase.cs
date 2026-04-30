@@ -15,7 +15,7 @@ public class Purchase()
 
   [Range(0.01, (double)decimal.MaxValue)]
   [Column(TypeName = "decimal(18,2)")]
-  public required decimal TotalAmount { get; set; }
+  public required decimal TotalCost { get; set; }
 
   public required DateTimeOffset OperationDate { get; set; }
 

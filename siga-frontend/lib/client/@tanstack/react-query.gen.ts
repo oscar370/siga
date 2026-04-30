@@ -24,8 +24,10 @@ import {
   getCategories,
   getCategoriesLookup,
   getCategoryById,
+  getFinancialSummary,
   getLotById,
   getLots,
+  getLotsByProduct,
   getLotsByPurchase,
   getProductById,
   getProducts,
@@ -35,6 +37,7 @@ import {
   getPurchaseById,
   getPurchases,
   getPurchasesBySupplier,
+  getRecentTransactions,
   getSaleById,
   getSaleDetailsBySale,
   getSales,
@@ -107,9 +110,13 @@ import type {
   GetCategoryByIdData,
   GetCategoryByIdError,
   GetCategoryByIdResponse,
+  GetFinancialSummaryData,
+  GetFinancialSummaryResponse,
   GetLotByIdData,
   GetLotByIdError,
   GetLotByIdResponse,
+  GetLotsByProductData,
+  GetLotsByProductResponse,
   GetLotsByPurchaseData,
   GetLotsByPurchaseResponse,
   GetLotsData,
@@ -132,6 +139,8 @@ import type {
   GetPurchasesBySupplierResponse,
   GetPurchasesData,
   GetPurchasesResponse,
+  GetRecentTransactionsData,
+  GetRecentTransactionsResponse,
   GetSaleByIdData,
   GetSaleByIdError,
   GetSaleByIdResponse,
@@ -606,6 +615,31 @@ export const updateProductMutation = (
   };
   return mutationOptions;
 };
+
+export const getLotsByProductQueryKey = (
+  options: Options<GetLotsByProductData>
+) => createQueryKey("getLotsByProduct", options);
+
+export const getLotsByProductOptions = (
+  options: Options<GetLotsByProductData>
+) =>
+  queryOptions<
+    GetLotsByProductResponse,
+    DefaultError,
+    GetLotsByProductResponse,
+    ReturnType<typeof getLotsByProductQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getLotsByProduct({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getLotsByProductQueryKey(options),
+  });
 
 export const getProductsLookupQueryKey = (
   options?: Options<GetProductsLookupData>
@@ -1415,4 +1449,54 @@ export const getSaleDetailsBySaleOptions = (
       return data;
     },
     queryKey: getSaleDetailsBySaleQueryKey(options),
+  });
+
+export const getFinancialSummaryQueryKey = (
+  options: Options<GetFinancialSummaryData>
+) => createQueryKey("getFinancialSummary", options);
+
+export const getFinancialSummaryOptions = (
+  options: Options<GetFinancialSummaryData>
+) =>
+  queryOptions<
+    GetFinancialSummaryResponse,
+    DefaultError,
+    GetFinancialSummaryResponse,
+    ReturnType<typeof getFinancialSummaryQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getFinancialSummary({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getFinancialSummaryQueryKey(options),
+  });
+
+export const getRecentTransactionsQueryKey = (
+  options?: Options<GetRecentTransactionsData>
+) => createQueryKey("getRecentTransactions", options);
+
+export const getRecentTransactionsOptions = (
+  options?: Options<GetRecentTransactionsData>
+) =>
+  queryOptions<
+    GetRecentTransactionsResponse,
+    DefaultError,
+    GetRecentTransactionsResponse,
+    ReturnType<typeof getRecentTransactionsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getRecentTransactions({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getRecentTransactionsQueryKey(options),
   });

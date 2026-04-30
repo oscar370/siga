@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorContent } from "@/components/ui/error-content";
 import { Form, FormInput, FormTextArea } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
+import { useCanMutate } from "@/hooks/use-can-mutate";
 import {
   getUnitsOfMeasureOptions,
   getUnityOfMeasureByIdOptions,
@@ -25,6 +26,7 @@ type EditUnityOfMeasureProps = {
 };
 
 export function EditUnityOfMeasure({ id }: EditUnityOfMeasureProps) {
+  const canMutate = useCanMutate();
   const queryClient = useQueryClient();
   const { data, isError } = useSuspenseQuery(
     getUnityOfMeasureByIdOptions({ path: { id } })
@@ -64,9 +66,11 @@ export function EditUnityOfMeasure({ id }: EditUnityOfMeasureProps) {
         isRequired
       />
 
-      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? <Spinner /> : "Actualizar"}
-      </Button>
+      {canMutate && (
+        <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+          {isPending ? <Spinner /> : "Actualizar"}
+        </Button>
+      )}
     </Form>
   );
 }

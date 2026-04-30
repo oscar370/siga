@@ -26,7 +26,7 @@ type DataGroupProps = {
 export function DataGroup({ children }: DataGroupProps) {
   return (
     <section>
-      <dl className="space-y-2">{children}</dl>
+      <dl className={"space-y-2"}>{children}</dl>
     </section>
   );
 }

@@ -23,7 +23,10 @@ export default async function PurchaseDetailsPage({ params }: Props) {
   await Promise.all([
     queryClient.prefetchQuery(getPurchaseByIdOptions({ path: { id } })),
     queryClient.prefetchQuery(
-      getLotsByPurchaseOptions({ path: { id }, query: initialQueryParams })
+      getLotsByPurchaseOptions({
+        path: { id },
+        query: initialQueryParams,
+      })
     ),
   ]);
 

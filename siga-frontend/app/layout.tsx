@@ -1,4 +1,5 @@
 import { Providers } from "@/components/providers";
+import "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
@@ -17,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       suppressHydrationWarning
       className={cn(
         "antialiased",

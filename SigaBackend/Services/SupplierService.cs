@@ -54,7 +54,7 @@ public class SupplierService(SigaDbContext context) : ISupplierService
     var skip = (page - 1) * queryParams.PageSize;
 
     var suppliers = await query
-      .OrderBy(s => s.Name)
+      .OrderByDescending(s => s.Name)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<SupplierBasicDto>()
@@ -97,7 +97,7 @@ public class SupplierService(SigaDbContext context) : ISupplierService
     var skip = (page - 1) * queryParams.PageSize;
 
     var purchases = await query
-      .OrderBy(p => p.OperationDate)
+      .OrderByDescending(p => p.OperationDate)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<PurchaseBasicDto>()
@@ -118,7 +118,7 @@ public class SupplierService(SigaDbContext context) : ISupplierService
     var categories = await _context.Suppliers
       .AsNoTracking()
       .Where(s => s.IsActive && s.DeletedAt == null)
-      .OrderBy(s => s.Name)
+      .OrderByDescending(s => s.Name)
       .ProjectToType<LookupDto>()
       .ToListAsync();
 

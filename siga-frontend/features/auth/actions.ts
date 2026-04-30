@@ -1,23 +1,10 @@
 "use server";
 
-import { LoginRequest, postApiAuthLogin } from "@/lib/client";
-import { zAccessTokenResponse, zLoginRequest } from "@/lib/client/zod.gen";
-import { validate } from "@/lib/utils";
-import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export async function login(credentials: LoginRequest) {
-  const result = validate(zLoginRequest, credentials);
-  const response = await postApiAuthLogin({
-    body: result,
-  });
-  const validated = validate(zAccessTokenResponse, response.data);
-
-  if (validated.accessToken) {
-    const cookieStore = await cookies();
-    cookieStore.set("accessToken", validated.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-  }
+export async function logout() {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  cookieStore.delete(".AspNetCore.Identity.Application");
+  redirect("/auth/login");
 }

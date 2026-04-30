@@ -36,6 +36,6 @@
   },
   "mounts": ["source=pnpm-store,target=/pnpm-store,type=volume"],
   // postCreateCommand.sh parameters: $1=SA password, $2=dacpac path, $3=sql script(s) path
-  "postCreateCommand": ".devcontainer/post-install.sh",
+  "postCreateCommand": "chmod +x .devcontainer/post-install.sh && .devcontainer/post-install.sh",
   "remoteUser": "vscode"
 }

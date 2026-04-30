@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SigaBackend.Converters;
@@ -23,23 +21,21 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddRoles<IdentityRole<int>>()
     .AddEntityFrameworkStores<SigaDbContext>();
-// dotnet dev-certs https --trust
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
-
 
 // CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Policy", policy =>
     {
-        policy.WithOrigins("https://localhost:3000")
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -55,10 +51,12 @@ builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<ILotService, LotService>();
 builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Converters
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new TrimStringConverter()));
+
 
 var app = builder.Build();
 
@@ -99,7 +97,6 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedRolesAndAdminAsync(scope.ServiceProvider);
 }
 
-
 app.UseHttpsRedirection();
 
 app.MapGroup("/api/auth").MapIdentityApi<User>();
@@ -111,5 +108,6 @@ app.MapUnityOfMeasureEndpoints();
 app.MapPurchaseEndpoints();
 app.MapLotEndpoints();
 app.MapSaleEndpoints();
+app.MapDashboardEndpoints();
 
 app.Run();

@@ -4,7 +4,6 @@ import {
   getProductsLookupOptions,
   getSuppliersLookupOptions,
 } from "@/lib/client/@tanstack/react-query.gen";
-import { serverClient } from "@/lib/server-client";
 import {
   dehydrate,
   HydrationBoundary,
@@ -15,12 +14,8 @@ export default async function NewPurchasePage() {
   const queryClient = new QueryClient();
 
   await Promise.all([
-    queryClient.prefetchQuery(
-      getSuppliersLookupOptions({ client: serverClient })
-    ),
-    queryClient.prefetchQuery(
-      getProductsLookupOptions({ client: serverClient })
-    ),
+    queryClient.prefetchQuery(getSuppliersLookupOptions({})),
+    queryClient.prefetchQuery(getProductsLookupOptions({})),
   ]);
 
   return (

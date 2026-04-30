@@ -12,6 +12,7 @@ import {
 import { SelectGroup, SelectItem } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { useCanMutate } from "@/hooks/use-can-mutate";
 import {
   createSaleMutation,
   getProductsLookupOptions,
@@ -29,6 +30,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export function NewSale() {
+  const canMutate = useCanMutate();
   const queryClient = useQueryClient();
   const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(zSaleCreateDto),
@@ -138,9 +140,11 @@ export function NewSale() {
 
       <Separator />
 
-      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? <Spinner /> : "Guardar"}
-      </Button>
+      {canMutate && (
+        <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+          {isPending ? <Spinner /> : "Guardar"}
+        </Button>
+      )}
     </Form>
   );
 }

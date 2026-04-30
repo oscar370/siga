@@ -27,7 +27,7 @@ public class IdentityService() : IIdentityService
       user.Id,
       user.Email,
       user.FullName,
-       roles
+      roles
     ));
   }
 }

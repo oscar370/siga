@@ -13,7 +13,7 @@ public class Sale()
 
   [Range(0.01, (double)decimal.MaxValue)]
   [Column(TypeName = "decimal(18,2)")]
-  public required decimal TotalAmount { get; set; }
+  public required decimal TotalRevenue { get; set; }
 
   public required DateTime OperationDate { get; set; }
 

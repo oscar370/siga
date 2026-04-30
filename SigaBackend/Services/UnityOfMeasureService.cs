@@ -53,7 +53,7 @@ public class UnityOfMeasureService(SigaDbContext context) : IUnityOfMeasureServi
     var skip = (page - 1) * queryParams.PageSize;
 
     var unitsOfMeasure = await query
-      .OrderBy(um => um.Name)
+      .OrderByDescending(um => um.Name)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<UnityOfMeasureBasicDto>()
@@ -96,7 +96,7 @@ public class UnityOfMeasureService(SigaDbContext context) : IUnityOfMeasureServi
     var skip = (page - 1) * queryParams.PageSize;
 
     var products = await query
-      .OrderBy(p => p.Name)
+      .OrderByDescending(p => p.Name)
       .Skip(Math.Max(0, skip))
       .Take(queryParams.PageSize)
       .ProjectToType<ProductBasicDto>()
@@ -116,7 +116,7 @@ public class UnityOfMeasureService(SigaDbContext context) : IUnityOfMeasureServi
   {
     var unitsOfMeasure = await _context.UnityOfMeasures
       .AsNoTracking()
-      .OrderBy(um => um.Name)
+      .OrderByDescending(um => um.Name)
       .ProjectToType<LookupDto>()
       .ToListAsync();
 
