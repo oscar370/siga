@@ -45,7 +45,7 @@ export function EditProduct({ id }: EditProductProps) {
   const { data: unitsOfMeasure, isError: isUnitsOfMeasureError } =
     useSuspenseQuery(getUnitsOfMeasureLookupOptions());
 
-  const { control, handleSubmit, reset } = useForm({
+  const { control, handleSubmit } = useForm({
     resolver: zodResolver(zProductExtendedDto),
     defaultValues: data,
   });
@@ -57,7 +57,6 @@ export function EditProduct({ id }: EditProductProps) {
       queryClient.invalidateQueries(
         getProductsOptions({ query: initialQueryParams })
       );
-      reset();
       toast.success("Producto actualizado");
     },
     onError: () => toast.error("Ocurrió un error al actualizar el producto"),

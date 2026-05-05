@@ -118,7 +118,7 @@ public class SupplierService(SigaDbContext context) : ISupplierService
     var categories = await _context.Suppliers
       .AsNoTracking()
       .Where(s => s.IsActive && s.DeletedAt == null)
-      .OrderByDescending(s => s.Name)
+      .OrderBy(s => s.Name)
       .ProjectToType<LookupDto>()
       .ToListAsync();
 

@@ -123,7 +123,7 @@ public class ProductService(SigaDbContext context) : IProductService
     var products = await _context.Products
       .AsNoTracking()
       .Where(p => p.IsActive && p.DeletedAt == null)
-      .OrderByDescending(p => p.Name)
+      .OrderBy(p => p.Name)
       .ProjectToType<LookupDto>()
       .ToListAsync();
 
