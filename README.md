@@ -1,6 +1,6 @@
 # SIGA (Sistema Integrado de Gestión Administrativa)
 
-Un dashboard enfocado en gestión de logística de almacenes.
+Un dashboard enfocado en la gestión de logística de almacenes.
 
 Demo: https://siga-eta.vercel.app/auth/login
 
