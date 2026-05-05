@@ -47,7 +47,13 @@ export function EditProduct({ id }: EditProductProps) {
 
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(zProductExtendedDto),
-    defaultValues: data,
+    defaultValues: {
+      ...data,
+      categoryId: data?.categoryId ? String(data.categoryId) : undefined,
+      unityOfMeasureId: data?.unityOfMeasureId
+        ? String(data.unityOfMeasureId)
+        : undefined,
+    },
   });
 
   const { mutate, isPending } = useMutation({

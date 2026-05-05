@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export function LoginForm() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export function LoginForm() {
       query: { useCookies: true },
     }),
     onSuccess: () => router.replace("/dashboard"),
+    onError: () => toast.error("Ocurrió un error inesperado"),
   });
 
   return (
