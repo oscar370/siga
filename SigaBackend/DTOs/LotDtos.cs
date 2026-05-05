@@ -30,5 +30,3 @@ public record LotExtended : LotBaseDto
 {
   public required PurchaseBasicDto Purchase { get; set; }
 };
-
-// IEnumerable<SaleTransactionDto> Transaction

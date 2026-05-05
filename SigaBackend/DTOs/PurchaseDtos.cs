@@ -49,11 +49,9 @@ public abstract record PurchaseItemBaseDto
   public required int ProductId { get; set; }
 
   [Range(0.0001, (double)decimal.MaxValue)]
-  [Column(TypeName = "decimal(18,4)")]
   public required decimal Quantity { get; set; }
 
   [Range(0.00, (double)decimal.MaxValue)]
-  [Column(TypeName = "decimal(18,2)")]
   public required decimal UnitCost { get; set; }
 }
 

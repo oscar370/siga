@@ -4,8 +4,6 @@ using SigaBackend.Enums;
 
 namespace SigaBackend.Models;
 
-
-
 public class Purchase()
 {
   public int Id { get; set; }

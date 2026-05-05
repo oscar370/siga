@@ -15,7 +15,9 @@ public class LotConfiguration : IEntityTypeConfiguration<Lot>
       l.EntryDate
     });
 
-    builder.Property(l => l.RowVersion).IsRowVersion();
+    builder.Property<uint>("xmin")
+           .HasColumnType("xid")
+           .IsRowVersion();
 
     builder.HasOne(l => l.Product)
       .WithMany(p => p.Lots)

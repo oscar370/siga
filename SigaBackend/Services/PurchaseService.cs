@@ -32,7 +32,6 @@ public class PurchaseService(SigaDbContext context) : IPurchaseService
 
     if (!int.TryParse(userIdString, out int userId)) return TypedResults.Unauthorized();
 
-
     using var transaction = await _context.Database.BeginTransactionAsync();
 
     try

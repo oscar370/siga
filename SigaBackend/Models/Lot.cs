@@ -25,9 +25,6 @@ public class Lot()
   [Column(TypeName = "decimal(18,4)")]
   public required decimal AvailableQuantity { get; set; }
 
-  // Race condition
-  public byte[] RowVersion { get; set; } = [];
-
   // [1:N]
   public required int ProductId { get; set; }
   public Product Product { get; set; } = null!;
