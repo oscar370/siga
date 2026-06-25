@@ -28,27 +28,26 @@
 
           shellHook = ''
             export DOTNET_CLI_TELEMETRY_OPTOUT=1
-
-            # Local directory for PostgreSQL data
             export PGDATA="$PWD/.pgdata"
             export PGDATABASE="sigadb"
             export PGPORT="5432"
 
+            alias db-start='pg_ctl start -l "$PGDATA/pg.log" -o "-c unix_socket_directories=$PGDATA -h 127.0.0.1 -p $PGPORT"'
+            alias db-stop='pg_ctl stop -m fast'
+            alias db-status='pg_ctl status'
+
             if [ ! -d "$PGDATA" ]; then
-              echo "Starting a local PostgreSQL cluster..."
+             
               initdb --auth=trust --no-locale --encoding=UTF8
               
-              pg_ctl start -l "$PGDATA/pg.log" -o "-h 127.0.0.1 -p $PGPORT"
+              db-start
               sleep 2
-              createuser postgres -s || true
-              createdb $PGDATABASE -O postgres || true
-              pg_ctl stop -m fast
+
+              createuser postgres -s -h 127.0.0.1 -p $PGPORT || true
+              createdb $PGDATABASE -O postgres -h 127.0.0.1 -p $PGPORT || true
+              
+              db-stop
             fi
-
-            echo "Starting the PostgreSQL service on port $PGPORT..."
-            pg_ctl start -l "$PGDATA/pg.log" -o "-h 127.0.0.1 -p $PGPORT"
-
-            trap 'echo "Stopping PostgreSQL..."; pg_ctl stop -m fast' EXIT
           '';
         };
       }

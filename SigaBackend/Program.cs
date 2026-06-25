@@ -103,6 +103,8 @@ using (var scope = app.Services.CreateScope())
     await context.Database.MigrateAsync();
 
     await DbSeeder.SeedRolesAndAdminAsync(services);
+
+    await DbSeeder.SeedInventoryAsync(context);
 }
 
 app.UseHttpsRedirection();
