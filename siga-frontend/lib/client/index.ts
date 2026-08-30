@@ -41,6 +41,7 @@ export {
   getUnitsOfMeasureLookup,
   getUnityOfMeasureById,
   getUser,
+  healthCheck,
   mapIdentityApiApiAuthConfirmEmail,
   type Options,
   postApiAuthForgotPassword,
@@ -58,6 +59,7 @@ export {
 } from "./sdk.gen";
 export type {
   AccessTokenResponse,
+  AnonymousTypeOfstringAndDateTimeOffset,
   CancelPurchaseData,
   CancelPurchaseError,
   CancelPurchaseErrors,
@@ -224,6 +226,9 @@ export type {
   GetUserErrors,
   GetUserResponse,
   GetUserResponses,
+  HealthCheckData,
+  HealthCheckResponse,
+  HealthCheckResponses,
   HttpValidationProblemDetails,
   InfoRequest,
   InfoResponse,

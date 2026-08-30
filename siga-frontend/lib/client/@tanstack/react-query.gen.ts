@@ -48,6 +48,7 @@ import {
   getUnitsOfMeasureLookup,
   getUnityOfMeasureById,
   getUser,
+  healthCheck,
   mapIdentityApiApiAuthConfirmEmail,
   type Options,
   postApiAuthForgotPassword,
@@ -164,6 +165,8 @@ import type {
   GetUnityOfMeasureByIdResponse,
   GetUserData,
   GetUserResponse,
+  HealthCheckData,
+  HealthCheckResponse,
   MapIdentityApiApiAuthConfirmEmailData,
   PostApiAuthForgotPasswordData,
   PostApiAuthForgotPasswordError,
@@ -195,6 +198,68 @@ import type {
   UpdateUnityOfMeasureError,
   UpdateUnityOfMeasureResponse,
 } from "../types.gen";
+
+export type QueryKey<TOptions extends Options> = [
+  Pick<TOptions, "baseUrl" | "body" | "headers" | "path" | "query"> & {
+    _id: string;
+    _infinite?: boolean;
+    tags?: ReadonlyArray<string>;
+  },
+];
+
+const createQueryKey = <TOptions extends Options>(
+  id: string,
+  options?: TOptions,
+  infinite?: boolean,
+  tags?: ReadonlyArray<string>
+): [QueryKey<TOptions>[0]] => {
+  const params: QueryKey<TOptions>[0] = {
+    _id: id,
+    baseUrl:
+      options?.baseUrl || (options?.client ?? client).getConfig().baseUrl,
+  } as QueryKey<TOptions>[0];
+  if (infinite) {
+    params._infinite = infinite;
+  }
+  if (tags) {
+    params.tags = tags;
+  }
+  if (options?.body) {
+    params.body = options.body;
+  }
+  if (options?.headers) {
+    params.headers = options.headers;
+  }
+  if (options?.path) {
+    params.path = options.path;
+  }
+  if (options?.query) {
+    params.query = options.query;
+  }
+  return [params];
+};
+
+export const healthCheckQueryKey = (options?: Options<HealthCheckData>) =>
+  createQueryKey("healthCheck", options);
+
+export const healthCheckOptions = (options?: Options<HealthCheckData>) =>
+  queryOptions<
+    HealthCheckResponse,
+    DefaultError,
+    HealthCheckResponse,
+    ReturnType<typeof healthCheckQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await healthCheck({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: healthCheckQueryKey(options),
+  });
 
 export const postApiAuthRegisterMutation = (
   options?: Partial<Options<PostApiAuthRegisterData>>
@@ -266,46 +331,6 @@ export const postApiAuthRefreshMutation = (
     },
   };
   return mutationOptions;
-};
-
-export type QueryKey<TOptions extends Options> = [
-  Pick<TOptions, "baseUrl" | "body" | "headers" | "path" | "query"> & {
-    _id: string;
-    _infinite?: boolean;
-    tags?: ReadonlyArray<string>;
-  },
-];
-
-const createQueryKey = <TOptions extends Options>(
-  id: string,
-  options?: TOptions,
-  infinite?: boolean,
-  tags?: ReadonlyArray<string>
-): [QueryKey<TOptions>[0]] => {
-  const params: QueryKey<TOptions>[0] = {
-    _id: id,
-    baseUrl:
-      options?.baseUrl || (options?.client ?? client).getConfig().baseUrl,
-  } as QueryKey<TOptions>[0];
-  if (infinite) {
-    params._infinite = infinite;
-  }
-  if (tags) {
-    params.tags = tags;
-  }
-  if (options?.body) {
-    params.body = options.body;
-  }
-  if (options?.headers) {
-    params.headers = options.headers;
-  }
-  if (options?.path) {
-    params.path = options.path;
-  }
-  if (options?.query) {
-    params.query = options.query;
-  }
-  return [params];
 };
 
 export const mapIdentityApiApiAuthConfirmEmailQueryKey = (

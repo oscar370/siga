@@ -11,6 +11,11 @@ export type AccessTokenResponse = {
   refreshToken: string;
 };
 
+export type AnonymousTypeOfstringAndDateTimeOffset = {
+  status: null | string;
+  time: string;
+};
+
 export type CategoryBasicDto = {
   id: number | string;
   name: string;
@@ -200,8 +205,8 @@ export type ProductCreateDto = {
 
 export type ProductExtendedDto = {
   id?: number | string;
-  category: CategoryBasicDto;
   unityOfMeasure: UnityOfMeasureBasicDto;
+  category: CategoryBasicDto;
   name: string;
   sku: string;
   description?: null | string;
@@ -358,6 +363,23 @@ export type UserDto = {
   fullName: string;
   roles: Array<string>;
 };
+
+export type HealthCheckData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/health";
+};
+
+export type HealthCheckResponses = {
+  /**
+   * OK
+   */
+  200: AnonymousTypeOfstringAndDateTimeOffset;
+};
+
+export type HealthCheckResponse =
+  HealthCheckResponses[keyof HealthCheckResponses];
 
 export type PostApiAuthRegisterData = {
   body: RegisterRequest;

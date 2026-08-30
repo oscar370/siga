@@ -106,6 +106,8 @@ import type {
   GetUserData,
   GetUserErrors,
   GetUserResponses,
+  HealthCheckData,
+  HealthCheckResponses,
   MapIdentityApiApiAuthConfirmEmailData,
   MapIdentityApiApiAuthConfirmEmailResponses,
   PostApiAuthForgotPasswordData,
@@ -220,6 +222,22 @@ export type Options<
    */
   meta?: Record<string, unknown>;
 };
+
+export const healthCheck = <ThrowOnError extends boolean = false>(
+  options?: Options<HealthCheckData, ThrowOnError>
+) =>
+  (options?.client ?? client).get<HealthCheckResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) =>
+      await z
+        .object({
+          body: z.never().optional(),
+          path: z.never().optional(),
+          query: z.never().optional(),
+        })
+        .parseAsync(data),
+    url: "/api/health",
+    ...options,
+  });
 
 export const postApiAuthRegister = <ThrowOnError extends boolean = false>(
   options: Options<PostApiAuthRegisterData, ThrowOnError>

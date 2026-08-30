@@ -26,6 +26,11 @@ export const zAccessTokenResponse = z.object({
   refreshToken: z.string(),
 });
 
+export const zAnonymousTypeOfstringAndDateTimeOffset = z.object({
+  status: z.string().nullable(),
+  time: z.iso.datetime(),
+});
+
 export const zCategoryBasicDto = z.object({
   id: z.union([
     z
@@ -927,8 +932,8 @@ export const zProductExtendedDto = z.object({
       z.string().regex(/^-?(?:0|[1-9]\d*)$/),
     ])
     .optional(),
-  category: zCategoryBasicDto,
   unityOfMeasure: zUnityOfMeasureBasicDto,
+  category: zCategoryBasicDto,
   name: z.string().min(1).max(50),
   sku: z.string().min(1).max(50),
   description: z.string().max(200).nullish(),
@@ -1179,6 +1184,11 @@ export const zUserDto = z.object({
   fullName: z.string(),
   roles: z.array(z.string()),
 });
+
+/**
+ * OK
+ */
+export const zHealthCheckResponse = zAnonymousTypeOfstringAndDateTimeOffset;
 
 export const zPostApiAuthRegisterBody = zRegisterRequest;
 

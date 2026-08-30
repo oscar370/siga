@@ -16,6 +16,7 @@ public abstract record ProductBaseDto
   [Range(0.01, (double)decimal.MaxValue)]
   public required decimal BasePrice { get; set; }
   public required int CategoryId { get; set; }
+
   public required int UnityOfMeasureId { get; set; }
 }
 

@@ -18,7 +18,7 @@ const columns: ColumnDef<ProductBasicDto>[] = [
     accessorKey: "name",
     header: "Nombre",
     cell: ({ row }) => {
-      const path = `/dashboard/units-of-measure/${row.original.id}`;
+      const path = `/dashboard/products/${row.original.id}`;
       const name = row.original.name;
 
       return <Link href={path}>{name}</Link>;
