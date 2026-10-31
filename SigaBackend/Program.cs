@@ -1,3 +1,4 @@
+using dotenv.net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SigaBackend.Converters;
@@ -6,6 +7,7 @@ using SigaBackend.Endpoints;
 using SigaBackend.Models;
 using SigaBackend.Services;
 
+DotEnv.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
