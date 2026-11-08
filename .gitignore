@@ -1,3 +1,4 @@
 .pgdata
 .direnv
 .devenv
+.keys
